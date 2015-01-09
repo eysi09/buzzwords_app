@@ -13,4 +13,32 @@
 
 ActiveRecord::Schema.define(:version => 0) do
 
+  create_table "general_assemblies", :id => false, :force => true do |t|
+    t.integer "ordinal",                :null => false
+    t.string  "year_from", :limit => 4, :null => false
+    t.string  "year_to",   :limit => 4
+  end
+
+  create_table "members_of_parliament", :force => true do |t|
+    t.string "name", :null => false
+  end
+
+  add_index "members_of_parliament", ["name"], :name => "members_of_parliament_name_key", :unique => true
+
+  create_table "members_of_parliament_x_general_assemblies", :id => false, :force => true do |t|
+    t.integer "member_of_parliament_id", :null => false
+    t.integer "general_assembly_id",     :null => false
+    t.string  "party"
+    t.string  "details"
+  end
+
+  create_table "speeches", :force => true do |t|
+    t.datetime "date",                    :null => false
+    t.integer  "member_of_parliament_id", :null => false
+    t.integer  "general_assembly_id",     :null => false
+    t.string   "party"
+    t.text     "content"
+    t.string   "url"
+  end
+
 end
