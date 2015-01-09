@@ -13,3 +13,7 @@
 # ActiveSupport::Inflector.inflections do |inflect|
 #   inflect.acronym 'RESTful'
 # end
+
+ActiveSupport::Inflector.inflections do |inflect|
+  inflect.irregular 'member_of_parliament', 'members_of_parliament'
+end
