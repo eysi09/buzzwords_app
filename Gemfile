@@ -21,11 +21,9 @@ gem 'jquery-rails'
 gem 'sequel'
 
 group :development, :test do
-  gem 'ruby-debug'
   gem 'awesome_print'
   gem 'interactive_editor'
   gem 'rspec'
   gem 'rspec-rails'
-  gem 'torquebox-server', '~> 3.0.2'
   gem 'pry-rails'
 end
