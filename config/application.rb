@@ -11,6 +11,11 @@ end
 
 module BuzzwordsApp
   class Application < Rails::Application
+
+    config.autoload_paths += %W(#{config.root}/lib)        # Autoload lib directory
+    config.autoload_paths += %W(#{config.root}/lib/*.rb)
+    config.autoload_paths += Dir["#{config.root}/lib/**/*.rb"] # and all subdirectories
+    
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
