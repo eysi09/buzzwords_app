@@ -9,17 +9,17 @@ module WordCountUtils
   def self.get_word_freq_by_mp(mp, opts = {})
     conds = opts[:general_assemblies] ? {general_assembly_id: opts[:general_assemblies]} : {}
     conds.merge!(member_of_parliament_id: mp.id)
-    self.get_word_freq(conds)
+    self.get_word_freq(conds)[0...40]
   end
 
   def self.get_word_freq_by_party(party, opts = {})
     conds = opts[:general_assemblies] ? {general_assembly_id: opts[:general_assemblies]} : {}
     conds.merge!(party: party)
-    self.get_word_freq(conds)
+    self.get_word_freq(conds)[0...40]
   end
 
   def self.get_word_freq_by_general_assembly(ga)
-    self.get_word_freq({general_assembly_id: ga.id})
+    self.get_word_freq({general_assembly_id: ga.id})[0...40]
   end
 
   def self.which_party_said(word, opts = {})
@@ -60,7 +60,7 @@ module WordCountUtils
     speeches = self.get_speeches(conds)
     words = speeches.flat_map{|s| s.split(' ')}
     word_freq = Hash.new(0)
-    words.each{ |word| word_freq[self.clean_str(word)] += 1 }
+    words.each{ |word| word_freq[self.clean_str(word)] += 1 if word.size > 10}
     word_freq.sort_by{ |x,y| y }.reverse
   end
 
