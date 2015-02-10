@@ -1,7 +1,16 @@
 source 'https://rubygems.org'
 
 gem 'rails', '3.2.19'
-gem 'pg'
+# Couldn't install the pg gem on windows
+if RbConfig::CONFIG['target_os'] == 'mswin32'
+	gem 'jdbc-postgres'
+	gem 'activerecord-jdbc-adapter'
+else
+	gem 'pg'
+end
+gem 'jquery-rails'
+gem 'sequel'
+gem 'react-rails'
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -11,8 +20,6 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
-gem 'jquery-rails'
-gem 'sequel'
 
 group :development, :test do
   gem 'awesome_print'
