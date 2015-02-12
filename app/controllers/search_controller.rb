@@ -5,7 +5,7 @@ class SearchController < ApplicationController
   def index
   end
 
-  def load_search_data
+  def query_server
   end
 
 end

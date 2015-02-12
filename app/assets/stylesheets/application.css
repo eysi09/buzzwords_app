@@ -1,5 +1,6 @@
 /*
- *= require bootstrap
  *= require_self
+ *= require normalize-rails
+ *= require bootstrap
  *= require_tree .
  */
