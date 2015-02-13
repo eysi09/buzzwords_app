@@ -1,5 +1,6 @@
 $(document).ready(function() {
 
+  console.log('ready');
   /* Anticipated structure:
 
     -MainApplication
@@ -12,10 +13,12 @@ $(document).ready(function() {
 
   */
 
+  var first_render = true;
+
   var MainApplication = React.createClass({
     getInitialState: function() {
       return {
-        results: [['Bjarni Ben', 24], ['Arni Pall', 99]]
+        results: []
       };
     },
 
@@ -30,7 +33,7 @@ $(document).ready(function() {
         <section id="search-section">
           <div className="container">
             <div className="row" id="search-bar-wrap">
-              <SearchBar />
+              <SearchBar onQueryResponse={this.handleQueryResponse}/>
             </div>
           </div>
           <div className="container">
@@ -51,27 +54,31 @@ $(document).ready(function() {
   var SearchBar = React.createClass({
     render: function() {
       return (
-        <form role="search" onSubmit={this.handleSubmit}>
-          <div className="form-group">
-            <div className="input-group input-group-lg">
-              <input type="text" className="form-control" placeholder="Search" />
-              <span className="input-group-btn" id="search-icon">
-                <button type="submit" className="btn btn-primary">Search</button>
-              </span>
-            </div>
-          </div>
-        </form>
+        <div className="input-group input-group-lg">
+          <input onKeyDown={this.triggerQuery} type="text" className="form-control" placeholder="Search" />
+          <span className="input-group-btn" id="search-icon">
+            <button onClick={this.handleQuery} className="btn btn-primary">Search</button>
+          </span>
+        </div>
       );
     },
 
-    handleSubmit: function() {
-      var data = {
-        search_string: $('input').val()
-      };
-      this_guy = this;
-      $.get('/search/query_server', data, function(response) {
-        debugger
-      });
+    triggerQuery: function(event) {
+      if (event.keyCode === 13) this.handleQuery();
+    },
+
+    handleQuery: function() {
+      if (search_string = $('input').val()) {
+        var data = {
+          search_string: search_string
+        };
+        this_guy = this;
+        $.get('/search/query_server', data, function(response) {
+          this_guy.props.onQueryResponse(response.results);
+        });
+      } else {
+        this.props.onQueryResponse([]);
+      }
     }
 
   });
@@ -131,6 +138,9 @@ $(document).ready(function() {
     }
   });
 
-  React.render(<MainApplication />, $('#search-section')[0]);
+  // Small workaround for now
+  if (MainApplication) {
+    React.render(<MainApplication />, $('#search-section')[0]);
+  }  
 
 });
