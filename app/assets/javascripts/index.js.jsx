@@ -87,10 +87,9 @@ $(document).ready(function() {
   var SearchResultsTable = React.createClass({
 
     render: function() {
-      var rows = []
-      this.props.results.forEach(function(row_data) {
-        rows.push(<SearchResultsRow row_data={row_data} />)
-      }.bind(this));
+      var rows = _.map(this.props.results, function(row_data) {
+        return <SearchResultsRow row_data={row_data} />;
+      })
       return (
         <div className="container">
           <div className="row" id="search-results-wrap">

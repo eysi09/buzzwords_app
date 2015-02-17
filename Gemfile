@@ -14,6 +14,7 @@ gem 'react-rails'
 gem 'normalize-rails'
 gem 'bootstrap-sass', '~> 3.3.3'
 gem 'autoprefixer-rails'
+gem 'lodash-rails'
 
 # Gems used only for assets and not required
 # in production environments by default.
