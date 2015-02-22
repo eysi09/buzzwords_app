@@ -78,6 +78,11 @@ $(document).ready(function() {
       return (
         <div className="container">
           <div className="row" id="visualizer-wrap">
+            <select className="selectpicker" multiple data-selected-text-format="count">
+              <option>Mustard</option>
+              <option>Ketchup</option>
+              <option>Relish</option>
+            </select>
           </div>
         </div>
       );
