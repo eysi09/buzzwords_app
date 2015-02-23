@@ -5,6 +5,12 @@ $(document).ready(function() {
 
     -SearchBox
       -SearchBar
+      - FilterWrap
+        - YearFilter
+          - PartyFilter
+            - MpFilter
+          - DateFromFilter
+          - DateToFilter
       -Visualizer
       -SearchResultsTable
         -SearchResultsTableHeader
