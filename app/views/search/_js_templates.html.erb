@@ -1,0 +1,25 @@
+<script id="filters-template" type="text/template">
+  <div class="row filter-wrap">
+    <div className="col-md-4">
+      <select class="selectpicker" multiple data-selected-text-format="count">
+        <& _.each(general_assemblies, function(general_assembly) { &>
+          <option><&= general_assembly &></option>
+        <& }); &>
+      </select>
+    </div>
+    <div className="col-md-4">
+      <select class="selectpicker" multiple data-selected-text-format="count">
+        <& _.each(parties, function(party) { &>
+           <option><&= party &></option>
+        <& }); &>
+      </select>
+    </div>
+    <div className="col-md-4">
+      <select class="selectpicker" multiple data-selected-text-format="count">
+        <& _.each(mps, function(mp) { &>
+          <option><&= mp &></option>
+        <& }); &>
+      </select>
+    </div>
+  </div>
+</script>

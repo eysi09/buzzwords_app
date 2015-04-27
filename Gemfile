@@ -12,14 +12,13 @@ gem 'jquery-rails'
 gem 'sequel'
 gem 'react-rails'
 gem 'normalize-rails'
-gem 'bootstrap-sass', '~> 3.3.3'
+gem 'bootstrap-sass', '~> 3.3.4'
 gem 'autoprefixer-rails'
-gem 'lodash-rails'
+gem 'sass-rails', '>= 3.2'
 
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
-  gem 'sass-rails',   '~> 3.2.3'
   gem 'coffee-rails', '~> 3.2.1'
   gem 'uglifier', '>= 1.0.3'
 end

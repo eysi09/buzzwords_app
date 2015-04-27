@@ -1,22 +1,16 @@
 $(document).ready(function() {
 
   console.log('ready');
+
   /* Anticipated structure:
 
     -SearchBox
       -SearchBar
-      - FilterWrap
-        - YearFilter
-          - PartyFilter
-            - MpFilter
-          - DateFromFilter
-          - DateToFilter
       -Visualizer
       -SearchResultsTable
         -SearchResultsTableHeader
         -SearchResultsRow
           -SearchResultsColumn?
-
   */
 
   var SearchBox = React.createClass({
@@ -34,11 +28,11 @@ $(document).ready(function() {
 
     render: function() {
       return (
-        <section id="search-section">
+        <div className="container">
           <SearchBar onQueryResponse={this.handleQueryResponse}/>
           <Visualizer />
           <SearchResultsTable results={this.state.results}/>
-        </section>
+        </div>
       );
     }
   });
@@ -46,14 +40,12 @@ $(document).ready(function() {
   var SearchBar = React.createClass({
     render: function() {
       return (
-        <div className="container">
-          <div className="row" id="search-bar-wrap">
-            <div className="input-group input-group-lg">
-              <input onKeyDown={this.maybeHandleQuery} type="text" className="form-control" placeholder="Search" ref="query_string" />
-              <span className="input-group-btn" id="search-icon">
-                <button onClick={this.handleQuery} className="btn btn-primary">Search</button>
-              </span>
-            </div>
+        <div className="row" id="searchbar-wrap">
+          <div className="input-group input-group-lg">
+            <input onKeyDown={this.maybeHandleQuery} type="text" className="form-control" placeholder="Search" ref="query_string" />
+            <span className="input-group-btn" id="search-icon">
+              <button onClick={this.handleQuery} className="btn btn-primary">Search</button>
+            </span>
           </div>
         </div>
       );
@@ -76,22 +68,11 @@ $(document).ready(function() {
         this.props.onQueryResponse([]);
       }
     }
-
   });
 
   var Visualizer = React.createClass({
     render: function() {
-      return (
-        <div className="container">
-          <div className="row" id="visualizer-wrap">
-            <select className="selectpicker" multiple data-selected-text-format="count">
-              <option>Mustard</option>
-              <option>Ketchup</option>
-              <option>Relish</option>
-            </select>
-          </div>
-        </div>
-      );
+      return (<div></div>);
     }
   });
 
@@ -102,17 +83,15 @@ $(document).ready(function() {
         return <SearchResultsRow row_data={row_data} />;
       })
       return (
-        <div className="container">
-          <div className="row" id="search-results-wrap">
-            <table className="table table:hover">
-              <thead>
-                <SearchResultsHeader />
-              </thead>
-              <tbody>
-                {rows}
-              </tbody>
-            </table>
-          </div>
+        <div className="row" id="search-results-wrap">
+          <table className="table table:hover">
+            <thead>
+              <SearchResultsHeader />
+            </thead>
+            <tbody>
+              {rows}
+            </tbody>
+          </table>
         </div>
       );
     }
@@ -147,6 +126,19 @@ $(document).ready(function() {
       );
     }
   });
+
+  // Get init data
+  // Using backbone for this since react is not playing
+  // nice with boostrap select
+  $.get('/search/init_data', {}, function(response) {
+
+    var filter_view = new FilterView({
+      el:                 $('#search-section'),
+      general_assemblies: response.general_assemblies,
+      parties:            response.parties,
+      mps:                response.mps
+    })
+  }.bind(this));
 
   React.render(<SearchBox />, $('#search-section')[0]);
 
