@@ -4,11 +4,21 @@
   text-align: center; 
 }
 
-.filter-wrap {
-  margin: 20px 0;
+/* Search bar */
+
+/* Filters */
+
+.filter-wrap, .date-picker-wrap {
+  margin-top: 20px;
 }
 
-/* Search bar */
+.in-row-margin {
+  margin-bottom: 10px;
+}
+
+.input-group.date {
+  max-width: 220px;
+}
 
 /* Search results charts */
 

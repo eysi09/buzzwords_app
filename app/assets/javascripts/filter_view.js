@@ -28,9 +28,16 @@ var FilterView = Backbone.View.extend({
       parties:            this.parties,
       mps:                this.mps
     });
-    $el.append(filter_html);
+    $el.after(filter_html);
     // Initialize bootstrap select
     $('.selectpicker').selectpicker();
+    // Initialize bootstrap datepicker
+    $('#date-from').datetimepicker({
+      format: 'YYYY-MM-DD'
+    });
+    $('#date-to').datetimepicker({
+      format: 'YYYY-MM-DD'
+    });
   },
 
   filter: function() {

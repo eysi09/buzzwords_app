@@ -41,11 +41,13 @@ $(document).ready(function() {
     render: function() {
       return (
         <div className="row" id="searchbar-wrap">
-          <div className="input-group input-group-lg">
-            <input onKeyDown={this.maybeHandleQuery} type="text" className="form-control" placeholder="Search" ref="query_string" />
-            <span className="input-group-btn" id="search-icon">
-              <button onClick={this.handleQuery} className="btn btn-primary">Search</button>
-            </span>
+          <div className="col-md-9">
+            <div className="input-group input-group-lg">
+              <input onKeyDown={this.maybeHandleQuery} type="text" className="form-control" placeholder="Search" ref="query_string" />
+              <span className="input-group-btn" id="search-icon">
+                <button onClick={this.handleQuery} className="btn btn-primary">Search</button>
+              </span>
+            </div>
           </div>
         </div>
       );
@@ -84,14 +86,16 @@ $(document).ready(function() {
       })
       return (
         <div className="row" id="search-results-wrap">
-          <table className="table table:hover">
-            <thead>
-              <SearchResultsHeader />
-            </thead>
-            <tbody>
-              {rows}
-            </tbody>
-          </table>
+          <div className="col-md-9">
+            <table className="table table:hover">
+              <thead>
+                <SearchResultsHeader />
+              </thead>
+              <tbody>
+                {rows}
+              </tbody>
+            </table>
+          </div>
         </div>
       );
     }
