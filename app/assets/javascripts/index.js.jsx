@@ -13,11 +13,31 @@ $(document).ready(function() {
           -SearchResultsColumn?
   */
 
-  var SearchBox = React.createClass({
+  var SearchControls = React.createClass({
     getInitialState: function() {
       return {
-        results: []
+        ga_data_hash:     {},
+        parties_mps_hash: {},
+        mps_name_hash:    {},
+        selected_gas:     [],
+        selected_parties: [],
+        selected_mps:     [],
+        visible_parties:  [],
+        visible_mp_ids:   [],
+        results:          []
       };
+    },
+
+    componentDidMount: function() {
+      $.get('/search/init_data', {}, function(response) {
+
+        this.setState({
+          ga_data_hash:     response.ga_data_hash,
+          parties_mps_hash: response.parties_mps_hash,
+          mps_name_hash:    response.mps_name_hash
+        });
+
+      }.bind(this));
     },
 
     handleQueryResponse: function(results) {
@@ -26,14 +46,30 @@ $(document).ready(function() {
       })
     },
 
+    handleSelectChange: function(select_el, val) {
+    },
+
+    filter: function() {
+
+    },
+
     render: function() {
-      return (
-        <div className="container">
-          <SearchBar onQueryResponse={this.handleQueryResponse}/>
-          <Visualizer />
-          <SearchResultsTable results={this.state.results}/>
+      return <div className="container">
+        <SearchBar onQueryResponse={this.handleQueryResponse}/>
+        <div className="row filter-wrap">
+          <Select onSelectChange={this.handleSelectChange}
+                  option_copmonent={<GAOption data={{ga_data_hash: this.state.ga_data_hash}} />}
+                  />
+          <Select onSelectChange={this.handleSelectChange}
+                  option_copmonent={<PartyOption data={{visible_parties: this.state.visible_parties}} />}
+                  />
+          <Select onSelectChange={this.handleSelectChange}
+                  option_component={<MPOption  data={{visible_mp_ids: this.state.visible_mp_ids, parties_mps_hash: this.state.parties_mps_hash}} />}
+                  />
         </div>
-      );
+        <Visualizer />
+        <SearchResultsTable results={this.state.results}/>
+      </div>
     }
   });
 
@@ -62,15 +98,51 @@ $(document).ready(function() {
         var data = {
           search_string: search_string
         };
-        this_guy = this;
+        self = this;
         $.get('/search/query_server', data, function(response) {
-          this_guy.props.onQueryResponse(response.results);
+          self.props.onQueryResponse(response.results);
         });
       } else {
         this.props.onQueryResponse([]);
       }
     }
   });
+
+  var Select = React.createClass({
+
+    render: function() {
+      return <div className="col-md-3 select">
+        {this.props.option_copmonent}
+      </div>
+    }
+
+  });
+
+  var GAOption = React.createClass({
+
+    render: function() {
+      return <div>
+      </div>
+    }
+
+  });
+
+  var PartyOption = React.createClass({
+
+    render: function() {
+      return <div>
+      </div>
+    }
+
+  });
+
+  var MPOption = React.createClass({
+    render: function() {
+      return <div>
+      </div>
+    }
+  });
+
 
   var Visualizer = React.createClass({
     render: function() {
@@ -137,13 +209,14 @@ $(document).ready(function() {
   $.get('/search/init_data', {}, function(response) {
 
     var filter_view = new FilterView({
-      el:               $('#search-section'),
+      el:               $('#main'),
       ga_data_hash:     response.ga_data_hash,
       parties_mps_hash: response.parties_mps_hash,
       mps_name_hash:    response.mps_name_hash
     })
+
   }.bind(this));
 
-  React.render(<SearchBox />, $('#search-section')[0]);
+  React.render(<SearchControls />, $('#main')[0]);
 
 });
