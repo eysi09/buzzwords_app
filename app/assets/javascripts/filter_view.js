@@ -31,13 +31,11 @@ var FilterView = Backbone.View.extend({
       'render',
       'filter')
     this.filters_template   = _.template($('#filters-template').html());
-    this.general_assemblies_hash = options.general_assemblies;
+    this.ga_data_hash       = options.ga_data_hash;
+    this.parties_mps_hash   = options.parties_mps_hash;
     this.mps_name_hash      = options.mps_name_hash;
-    this.visible_mp_ids = null;
-    this.visible_parties = null;
-    this.selected_general_assemblies = [];
-    this.selected_parties = [];
-    this.selected_mps = [];
+    this.visible_parties    = [];
+    this.visible_mp_ids     = [];
     this.build_option_values();
     this.render();
   },
@@ -45,9 +43,10 @@ var FilterView = Backbone.View.extend({
   render: function() {
     var $el = this.$('#searchbar-wrap');
     var filter_html = this.filters_template({
-      general_assemblies: this.general_assemblies,
-      parties:            this.parties,
-      mps:                this.mps
+      general_assemblies: this.ga_data_hash,
+      parties:            this.visible_parties,
+      mp_ids:             this.visible_mp_ids,
+      mps_name_hash:      this.mps_name_hash
     });
     $el.after(filter_html);
     // Initialize bootstrap select
@@ -62,17 +61,34 @@ var FilterView = Backbone.View.extend({
   },
 
   build_option_values: function() {
-    this.visible_parties = [];
-    this.visble_mps = [];
-    _.each(this.data_hash, function(d) {
-      if (_.contains(this.selected_general_assemblies], d.general_assembly_id) {
-        this.visible_parties.push(d.party)
+    var selected_general_assemblies = _.map($('#gas option:selected'), function(opt) {
+      return $(opt).val();
+    });
+    var selected_parties = [];
+    var no_ga_selected = selected_general_assemblies.length === 0;
+    var mps_by_gas = [];
+    var mps_by_parties = [];
+    // mps come along for the ride
+    this.visible_parties = _.reduce(this.ga_data_hash, function(memo, data, key) {
+      if (_.contains(this.selected_general_assemblies, key) || no_ga_selected) {
+        mps_by_gas = _.uniq(mps_by_gas.concat(data.mp_ids));
+        return _.uniq(memo.concat(data.parties))
       }
-    }, this);
+    }, [], this);
 
+    if (selected_parties.length > 0) {
+      var mps_by_parties = _.reduce(this.visible_parties, function(memo, party) {
+        return _.uniq(memo.concat(this.parties_mps_hash[party]))
+      }, [], this);
+      this.visible_mp_ids = _.intersection(mps_by_gas, mps_by_parties);
+    } else {
+      this.visible_mp_ids = mps_by_gas;
+    }
   },
 
   filter: function() {
+    this.build_option_values();
+    this.render();
   }
 
 });

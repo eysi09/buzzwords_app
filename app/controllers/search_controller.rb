@@ -15,7 +15,6 @@ class SearchController < ApplicationController
         Sequel.as(array_agg(:members_of_parliament_x_general_assemblies__member_of_parliament_id), :mp_ids),
         Sequel.as(array_agg(distinct(:members_of_parliament_x_general_assemblies__party)), :parties)]}
       .all
-
       .inject({}) do |hash, data|
         hash[data[:ordinal]] = data.except(:ordinal)
         hash
@@ -35,7 +34,7 @@ class SearchController < ApplicationController
 
     render :json => {
       ga_data_hash: ga_data_hash,
-      parties_mps_hash: parties,
+      parties_mps_hash: parties_mps_hash,
       mps_name_hash: mps_name_hash
     }
   end

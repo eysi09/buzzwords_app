@@ -1,23 +1,23 @@
 <script id="filters-template" type="text/template">
   <div class="row filter-wrap">
     <div class="col-md-3">
-      <select class="selectpicker in-row-margin" multiple data-selected-text-format="count">
-        <& _.each(general_assemblies, function(general_assembly) { &>
-          <option><&= general_assembly &></option>
+      <select id="gas" class="selectpicker in-row-margin" multiple data-selected-text-format="count">
+        <& _.each(general_assemblies, function(data, ordinal) { &>
+          <option value="<&= ordinal &>"><&= ordinal + ' (' + data.year_from + ' - ' + data.year_to + ')' &></option>
         <& }); &>
       </select>
     </div>
     <div class="col-md-3">
-      <select class="selectpicker in-row-margin" multiple data-selected-text-format="count">
-        <& _.each(parties, function(party) { &>
-           <option><&= party &></option>
+      <select id="parties" class="selectpicker in-row-margin" multiple data-selected-text-format="count">
+        <& _.each(parties, function(party_letter) { &>
+           <option value="<&= party_letter &>"><&= party_letter &></option>
         <& }); &>
       </select>
     </div>
     <div class="col-md-3">
-      <select class="selectpicker" multiple data-selected-text-format="count">
-        <& _.each(mps, function(mp) { &>
-          <option><&= mp &></option>
+      <select id="mps" class="selectpicker" multiple data-selected-text-format="count">
+        <& _.each(mp_ids, function(mp_id) { &>
+          <option value="<&= mp_id &>"><&= mps_name_hash[mp_id] &></option>
         <& }); &>
       </select>
     </div>

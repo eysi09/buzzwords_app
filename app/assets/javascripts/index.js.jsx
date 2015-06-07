@@ -137,10 +137,10 @@ $(document).ready(function() {
   $.get('/search/init_data', {}, function(response) {
 
     var filter_view = new FilterView({
-      el:                 $('#search-section'),
-      general_assemblies: response.general_assemblies,
-      parties:            response.parties,
-      mps:                response.mps
+      el:               $('#search-section'),
+      ga_data_hash:     response.ga_data_hash,
+      parties_mps_hash: response.parties_mps_hash,
+      mps_name_hash:    response.mps_name_hash
     })
   }.bind(this));
 
