@@ -16,15 +16,18 @@ $(document).ready(function() {
   var SearchControls = React.createClass({
     getInitialState: function() {
       return {
-        ga_data_hash:     {},
-        parties_mps_hash: {},
-        mps_name_hash:    {},
-        selected_gas:     [],
-        selected_parties: [],
-        selected_mps:     [],
-        visible_parties:  [],
-        visible_mp_ids:   [],
-        results:          []
+        ga_data_hash:         {},
+        parties_mps_hash:     {},
+        mps_name_hash:        {},
+        selected_gas:         [],
+        selected_parties:     [],
+        selected_mps:         [],
+        visible_parties:      [],
+        visible_mp_ids:       [],
+        gaSelectExpanded:     false,
+        partySelectExpanded:  false,
+        mpSelectExpanded:     false,
+        results:              []
       };
     },
 
@@ -46,7 +49,14 @@ $(document).ready(function() {
       })
     },
 
-    handleSelectChange: function(select_el, val) {
+    toggleSelectState: function() {
+      var obj = {}, selectState = {
+        gaSelect:     'gaSelectExpanded',
+        partySelect:  'partySelectExpanded',
+        mpSelect:     'mpSelectExpanded'
+      }[event.target.dataset.name];
+      obj[selectState] = !this.state[selectState]
+      this.setState(obj)
     },
 
     filter: function() {
@@ -57,14 +67,20 @@ $(document).ready(function() {
       return <div className="container">
         <SearchBar onQueryResponse={this.handleQueryResponse}/>
         <div className="row filter-wrap">
-          <Select onSelectChange={this.handleSelectChange}
-                  option_copmonent={<GAOption data={{ga_data_hash: this.state.ga_data_hash}} />}
+          <Select onSelectClick={this.toggleSelectState}
+                  name={'gaSelect'}
+                  optionCopmonent={<OptionWrap data={{ga_data_hash: this.state.ga_data_hash}} />}
+                  isExpanded={this.state['gaSelectExpanded']}
                   />
-          <Select onSelectChange={this.handleSelectChange}
-                  option_copmonent={<PartyOption data={{visible_parties: this.state.visible_parties}} />}
+          <Select onSelectClick={this.toggleSelectState}
+                  optionCopmonent={<OptionWrap data={{visible_parties: this.state.visible_parties}} />}
+                  name={'partySelect'}
+                  isExpanded={this.state['partySelectExpanded']}
                   />
-          <Select onSelectChange={this.handleSelectChange}
-                  option_component={<MPOption  data={{visible_mp_ids: this.state.visible_mp_ids, parties_mps_hash: this.state.parties_mps_hash}} />}
+          <Select onSelectClick={this.toggleSelectState}
+                  optionComponent={<OptionWrap  data={{visible_mp_ids: this.state.visible_mp_ids, parties_mps_hash: this.state.parties_mps_hash}} />}
+                  name={'mpSelect'}
+                  isExpanded={this.state['mpSelectExpanded']}
                   />
         </div>
         <Visualizer />
@@ -111,36 +127,33 @@ $(document).ready(function() {
   var Select = React.createClass({
 
     render: function() {
-      return <div className="col-md-3 select">
-        {this.props.option_copmonent}
+      var content = this.props.isExpanded ? this.props.optionCopmonent : 'no see';
+      return <div className='col-md-3 select' data-name={this.props.name} onClick={this.props.onSelectClick}>
+        {content}
       </div>
     }
 
   });
 
-  var GAOption = React.createClass({
+  var OptionWrap = React.createClass({
 
     render: function() {
-      return <div>
-      </div>
+      // For each visible data
+      // return <Option />
+      return <ul>
+      </ul>
     }
 
   });
 
-  var PartyOption = React.createClass({
+  var Option = React.createClass({
 
     render: function() {
-      return <div>
-      </div>
+      // On click: select / unselect
+      return <li>
+      </li>
     }
 
-  });
-
-  var MPOption = React.createClass({
-    render: function() {
-      return <div>
-      </div>
-    }
   });
 
 
