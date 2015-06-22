@@ -1,3 +1,3 @@
 //= require index
-//= require filter_view
+//= require lang_utils
 //= require boostrap-select

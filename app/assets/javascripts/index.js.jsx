@@ -16,14 +16,15 @@ $(document).ready(function() {
   var SearchControls = React.createClass({
     getInitialState: function() {
       return {
-        ga_data_hash:         {},
-        parties_mps_hash:     {},
-        mps_name_hash:        {},
-        selected_gas:         [],
-        selected_parties:     [],
-        selected_mps:         [],
-        visible_parties:      [],
-        visible_mp_ids:       [],
+        gaDataHash:           {},
+        partiesMpsHash:       {},
+        mpsNameHash:          {},
+        selectedGAs:          {},
+        selectedParties:      {},
+        selectedMps:          {},
+        visibleGAOpts:        [],
+        visiblePartyOpts:     [],
+        visibleMpOpts:        [],
         gaSelectExpanded:     false,
         partySelectExpanded:  false,
         mpSelectExpanded:     false,
@@ -35,11 +36,12 @@ $(document).ready(function() {
       $.get('/search/init_data', {}, function(response) {
 
         this.setState({
-          ga_data_hash:     response.ga_data_hash,
-          parties_mps_hash: response.parties_mps_hash,
-          mps_name_hash:    response.mps_name_hash
+          gaDataHash:     response.ga_data_hash,
+          partiesMpsHash: response.parties_mps_hash,
+          mpsNameHash:    response.mps_name_hash,
+          visibleGAIds:   _.keys(response.ga_data_hash).sort().reverse() // Always stays the same
         });
-
+        this.updateVisibleOptions();
       }.bind(this));
     },
 
@@ -59,8 +61,71 @@ $(document).ready(function() {
       this.setState(obj)
     },
 
-    filter: function() {
+    toggleOption: function(selectEl, id) {
+      var id = selectEl === 'partySelect' ? id : parseInt(id);
+      var selectionHolder = {
+        gaSelect:     this.state.selectedGAs,
+        partySelect:  this.state.selectedParties,
+        mpSelect:     this.state.selectedMps
+      }[selectEl]
+      if (selectionHolder[id]) delete selectionHolder[id];
+      else selectionHolder[id] = true;
+      this.updateVisibleOptions();
+    },
 
+    // Þrot
+    updateVisibleOptions: function() {
+      var selectedGAIds = _.keys(this.state.selectedGAs);
+      var selectedPartyIds = _.keys(this.state.selectedParties);
+      var mpsByGAs = [];
+      var mpsByParties = [];
+
+      // Filter by GA selection
+      if (selectedGAIds.length > 0) {
+        var visiblePartyIds = _.reduce(selectedGAIds, function(memo, id) {
+          mpsByGAs = _.uniq(mpsByGAs.concat(this.state.gaDataHash[id].mp_ids)); // mps come along for the ride
+          return _.uniq(memo.concat(this.state.gaDataHash[id].parties))
+        }, [], this);
+      } else {
+        var visiblePartyIds = _.keys(this.state.partiesMpsHash);
+        var mpsByGAs = _.uniq(_.flatten(_.values(this.state.partiesMpsHash)));
+      }
+
+      // Remove hidden parties from selection
+      var selectedParties = this.state.selectedParties;
+      _.each(selectedPartyIds, function(id) {
+        if (!_.contains(visiblePartyIds, id)) delete selectedParties[id]
+      });
+      selectedPartyIds = _.keys(selectedParties);
+
+      // Filter by MP selection
+      if (selectedPartyIds.length > 0) {
+        var mpsByParties = _.reduce(selectedPartyIds, function(memo, id) {
+          return _.uniq(memo.concat(this.state.partiesMpsHash[id]))
+        }, [], this);
+        var visibleMpIds = _.intersection(mpsByGAs, mpsByParties);
+      } else {
+        var visibleMpIds = mpsByGAs;
+      }
+
+      // Remove hidden mps from selection
+      var selectedMps = this.state.selectedMps;
+      _.each(selectedMps, function(val, key) {
+        if (!_.contains(visibleMpIds, parseInt(key))) delete selectedMps[key]
+      });
+
+      // Sort
+      visiblePartyIds.sort();
+      visibleMpIds = _.sortBy(visibleMpIds, function(id) {
+        return this.state.mpsNameHash[id];
+      }, this);
+
+      this.setState({
+        visiblePartyIds: visiblePartyIds,
+        visibleMpIds:    visibleMpIds,
+        selectedParties: selectedParties,
+        selectedMps:     selectedMps
+      });
     },
 
     render: function() {
@@ -68,18 +133,22 @@ $(document).ready(function() {
         <SearchBar onQueryResponse={this.handleQueryResponse}/>
         <div className="row filter-wrap">
           <Select onSelectClick={this.toggleSelectState}
+                  onOptionClick={this.toggleOption}
                   name={'gaSelect'}
-                  optionCopmonent={<OptionWrap data={{ga_data_hash: this.state.ga_data_hash}} />}
+                  data={{ids: this.state.visibleGAIds, values: this.state.gaDataHash, selection: this.state.selectedGAs}}
                   isExpanded={this.state['gaSelectExpanded']}
                   />
           <Select onSelectClick={this.toggleSelectState}
-                  optionCopmonent={<OptionWrap data={{visible_parties: this.state.visible_parties}} />}
+                  onOptionClick={this.toggleOption}
                   name={'partySelect'}
+                  data={{ids: this.state.visiblePartyIds, values: '', selection: this.state.selectedParties}}
                   isExpanded={this.state['partySelectExpanded']}
                   />
           <Select onSelectClick={this.toggleSelectState}
-                  optionComponent={<OptionWrap  data={{visible_mp_ids: this.state.visible_mp_ids, parties_mps_hash: this.state.parties_mps_hash}} />}
+                  onOptionClick={this.toggleOption}
                   name={'mpSelect'}
+                  data={{ids: this.state.visibleMpIds, values: this.state.mpsNameHash, selection: this.state.selectedMps}}
+                  titleHash={this.state.mpsNameHash}
                   isExpanded={this.state['mpSelectExpanded']}
                   />
         </div>
@@ -127,8 +196,35 @@ $(document).ready(function() {
   var Select = React.createClass({
 
     render: function() {
-      var content = this.props.isExpanded ? this.props.optionCopmonent : 'no see';
-      return <div className='col-md-3 select' data-name={this.props.name} onClick={this.props.onSelectClick}>
+      var count = _.keys(this.props.data.selection).length;
+      var name = this.props.name;
+      var selectLabel = '';
+      if (count === 0) {
+        selectLabel = {
+          gaSelect:     'Veldu þingár',
+          partySelect:  'Veldu þingflokk',
+          mpSelect:     'Veldu þingmann'
+        }[name];
+      } else if (count === 1) {
+        selectLabel = {
+          gaSelect:     'Eitt þingár valið',
+          partySelect:  'Einn þingflokkur valinn',
+          mpSelect:     'Einn þingmaður valinn'
+        }[name];
+      } else if (count > 1) {
+        selectLabel = {
+          gaSelect:     langUtils.number2words(count, 'neuter') + ' þingár valin',
+          partySelect:  langUtils.number2words(count, 'masc')  + ' þingflokkar valdir',
+          mpSelect:     langUtils.number2words(count, 'fem') + ' þingmenn valdir'
+        }[name];
+      }
+      if (this.props.isExpanded) {
+        var content = <OptionWrap onOptionClick={this.props.onOptionClick} data={this.props.data} parentSelect={name}/>;
+      } else {
+        var content = '';
+      }
+      return <div className='col-md-3 select' data-name={name} onClick={this.props.onSelectClick}>
+        {selectLabel}
         {content}
       </div>
     }
@@ -138,20 +234,61 @@ $(document).ready(function() {
   var OptionWrap = React.createClass({
 
     render: function() {
-      // For each visible data
-      // return <Option />
-      return <ul>
+      var ids = this.props.data.ids;
+      var values = this.props.data.values;
+      var selection = this.props.data.selection;
+      var parentSelect = this.props.parentSelect;
+      var componentGetter = function(id) {
+        return {
+          gaSelect:     <GAOption key={id} data={{id: id, values: values[id]}} />,
+          partySelect:  <PartyOption key={id} data={id} />,
+          mpSelect:     <MpOption key={id} data={values[id]} />
+        }[parentSelect]
+      };
+      var iconGetter = function(id) {
+        return selection[id] ? <i className="glyphicon glyphicon-ok"></i> : '';
+      };
+      return <ul className="option-wrap">
+        {_.map(ids, function(id) {
+          return <li className="option" data-value={id} onClick={this.props.onOptionClick.bind(null, parentSelect, id)} key={id}>
+            {iconGetter(id)}
+            {componentGetter(id)}
+          </li>
+        }, this)}
       </ul>
     }
 
   });
 
-  var Option = React.createClass({
+  var GAOption = React.createClass({
 
     render: function() {
-      // On click: select / unselect
-      return <li>
-      </li>
+      var values = this.props.data.values;
+      var selected = this.props.selected ? <i className="glyphicon glyphicon-ok"></i> : '';
+      return <div>
+        {this.props.data.id + ' (' + values.year_from + ' - ' + values.year_to + ')'}
+      </div>
+    }
+
+  });
+
+  var PartyOption = React.createClass({
+
+    render: function() {
+      var selected = this.props.selected ? <i className="glyphicon glyphicon-ok"></i> : '';
+      return <div>
+        {this.props.data}
+      </div>
+    }
+
+  });
+
+  var MpOption = React.createClass({
+
+    render: function() {
+      return <div>
+        {this.props.data}
+      </div>
     }
 
   });
@@ -219,16 +356,16 @@ $(document).ready(function() {
   // Get init data
   // Using backbone for this since react is not playing
   // nice with boostrap select
-  $.get('/search/init_data', {}, function(response) {
+  /*$.get('/search/init_data', {}, function(response) {
 
-    var filter_view = new FilterView({
+    /*var filter_view = new FilterView({
       el:               $('#main'),
       ga_data_hash:     response.ga_data_hash,
       parties_mps_hash: response.parties_mps_hash,
       mps_name_hash:    response.mps_name_hash
     })
 
-  }.bind(this));
+  }.bind(this)); */
 
   React.render(<SearchControls />, $('#main')[0]);
 
