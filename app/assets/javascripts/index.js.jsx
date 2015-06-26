@@ -128,9 +128,36 @@ $(document).ready(function() {
       });
     },
 
+    // Chart kinds: 
+    //  bar
+    //    year, 
+    //    party, 
+    //    mps
+    //  timeseries
+    //    party (default), 
+    //    mp
+    handleQuery: function(query_string) {
+      if (query_string) {
+        var data = {
+          query_string:   query_string,
+          gaids:          _.keys(this.state.selectedGAs),
+          partyids:       _.keys(this.state.selectedParties),
+          mpids:          _.keys(this.state.selectedMps),
+          chart_kind:     'bar',
+          group_by:       'mps'
+        };
+        self = this;
+        $.get('/search/query_server', data, function(response) {
+          self.onQueryResponse(response.results);
+        });
+      } else {
+        this.onQueryResponse([]);
+      }
+    },
+
     render: function() {
       return <div className="container">
-        <SearchBar onQueryResponse={this.handleQueryResponse}/>
+        <SearchBar onQuery={this.handleQuery}/>
         <div className="row filter-wrap">
           <Select onSelectClick={this.toggleSelectState}
                   onOptionClick={this.toggleOption}
@@ -159,38 +186,31 @@ $(document).ready(function() {
   });
 
   var SearchBar = React.createClass({
+
+    maybeQuery: function(event) {
+      if (event.keyCode === 13) this.query();
+    },
+
+    query: function() {
+      var query_string = this.refs.query_string.getDOMNode().value.trim()
+      this.props.onQuery(query_string);
+    },
+
     render: function() {
       return (
         <div className="row" id="searchbar-wrap">
           <div className="col-md-9">
             <div className="input-group input-group-lg">
-              <input onKeyDown={this.maybeHandleQuery} type="text" className="form-control" placeholder="Search" ref="query_string" />
+              <input onKeyDown={this.maybeQuery} type="text" className="form-control" placeholder="Leitarorð, t.d. heimilin" ref="query_string" />
               <span className="input-group-btn" id="search-icon">
-                <button onClick={this.handleQuery} className="btn btn-primary">Search</button>
+                <button onClick={this.query} className="btn btn-primary">Search</button>
               </span>
             </div>
           </div>
         </div>
       );
-    },
-
-    maybeHandleQuery: function(event) {
-      if (event.keyCode === 13) this.handleQuery();
-    },
-
-    handleQuery: function() {
-      if (search_string = this.refs.query_string.getDOMNode().value.trim()) {
-        var data = {
-          search_string: search_string
-        };
-        self = this;
-        $.get('/search/query_server', data, function(response) {
-          self.props.onQueryResponse(response.results);
-        });
-      } else {
-        this.props.onQueryResponse([]);
-      }
     }
+
   });
 
   var Select = React.createClass({

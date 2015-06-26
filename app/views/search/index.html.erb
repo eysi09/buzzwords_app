@@ -2,8 +2,8 @@
   <%= stylesheet_link_tag 'index_manifest' %>
 <% end %>
 <% content_for :script do %>
-  <%= render :partial => 'dependencies' %>
   <%= javascript_include_tag 'index_manifest' %>
+  <%= render :partial => 'dependencies' %>
   <%= render :partial => 'search/js_templates' %>
 <% end %>
 

@@ -42,8 +42,24 @@ class SearchController < ApplicationController
   end
 
   def query_server
+    speeches = QueryUtils.get_speeches(make_query_params)
+    if params[:chart_kind] = 'bar'
+      results = QueryUtils.get_barchart_data(make_query_params)
+    else
+      results = QueryUtils.get_timeseries_data(make_query_params)
+    end
     render :json => {
-      results: WordCountUtils.who_said(params[:search_string])
+      results: results
+    }
+  end
+
+  def make_query_params
+    {
+     query_string:  params[:query_string],
+     gaids:         params[:gaids],
+     partyids:      params[:partyids],
+     mpids:         params[:mpids],
+     group_by:      params[:group_by]
     }
   end
 
