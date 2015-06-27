@@ -1,4 +1,9 @@
+@import "global";
+
 /* Header Section */
+body {
+  color: $maincolor;
+}
 
 .main-header {
   text-align: center; 
@@ -20,6 +25,52 @@
   max-width: 220px;
 }
 
+.select {
+  @include border;
+  background-color: #fff;
+  background-image: none;
+  cursor: pointer;
+  font-size: 14px;
+  height: 34px;
+  line-height: 1.42857143;
+  margin: 10px;
+  padding: 6px 12px;
+  width: 220px;
+  text-transform: none;
+
+  span {
+    pointer-events: none;
+  }
+}
+
+.option-wrap {
+  @include border;
+  @include boxshadow;
+  background: rgba(255, 255, 255, 1);
+  list-style: none;
+  max-height: 550px;
+  overflow-y: auto;
+  padding: 5px 0 5px 0;
+  position: absolute;
+  right: 0px;
+  width: 100%;
+  top: 40px;
+  z-index: 10;
+
+  .option {
+    cursor: pointer;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .option:hover { @include hover;}
+
+  .glyphicon-ok {
+    position: absolute;
+    left: 3px;
+    top: 2px;
+  }
+}
 /* Search results charts */
 
 /* Search results table */

@@ -1,3 +1,4 @@
+//= require underscore
+//= require backbone
 //= require index
-//= require filter_view
-//= require boostrap-select
+//= require lang_utils
