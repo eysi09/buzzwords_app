@@ -2,8 +2,8 @@
   <div class="row filter-wrap">
     <div class="col-md-3">
       <select id="gas" class="selectpicker in-row-margin" multiple data-selected-text-format="count">
-        <& _.each(general_assemblies, function(data, ordinal) { &>
-          <option value="<&= ordinal &>"><&= ordinal + ' (' + data.year_from + ' - ' + data.year_to + ')' &></option>
+        <& _.each(general_assemblies, function(data, id) { &>
+          <option value="<&= id &>"><&= id + ' (' + data.year_from + ' - ' + data.year_to + ')' &></option>
         <& }); &>
       </select>
     </div>

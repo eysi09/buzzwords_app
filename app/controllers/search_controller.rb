@@ -4,27 +4,27 @@ class SearchController < ApplicationController
 
   def init_data
     ga_data_hash = DB[:general_assemblies]
-      .left_join(:members_of_parliament_x_general_assemblies,
-        'general_assemblies.ordinal = members_of_parliament_x_general_assemblies.general_assembly_id')
-      .group_by(:general_assemblies__ordinal,
+      .left_join(:mps_x_general_assemblies,
+        'general_assemblies.id = mps_x_general_assemblies.general_assembly_id')
+      .group_by(:general_assemblies__id,
         :general_assemblies__year_from,
         :general_assemblies__year_to)
-      .order_by(Sequel.asc(:general_assemblies__ordinal))
-      .select{[:general_assemblies__ordinal,
+      .order_by(Sequel.asc(:general_assemblies__id))
+      .select{[:general_assemblies__id,
         :general_assemblies__year_from,
         :general_assemblies__year_to,
-        Sequel.as(array_agg(distinct(:members_of_parliament_x_general_assemblies__member_of_parliament_id)), :mp_ids),
-        Sequel.as(array_agg(distinct(:members_of_parliament_x_general_assemblies__party)), :parties)]}
+        Sequel.as(array_agg(distinct(:mps_x_general_assemblies__mp_id)), :mp_ids),
+        Sequel.as(array_agg(distinct(:mps_x_general_assemblies__party)), :parties)]}
       .all
       .inject({}) do |hash, data|
-        hash[data[:ordinal]] = data.except(:ordinal)
+        hash[data[:id]] = data.except(:id)
         hash
       end
 
-    parties_mps_hash = DB[:members_of_parliament_x_general_assemblies]
+    parties_mps_hash = DB[:mps_x_general_assemblies]
       .group_by(:party)
       .select{[:party,
-        Sequel.as(array_agg(distinct(:members_of_parliament_x_general_assemblies__member_of_parliament_id)), :mp_ids)]}
+        Sequel.as(array_agg(distinct(:mps_x_general_assemblies__mp_id)), :mp_ids)]}
       .order_by(:party)
       .all
       .inject({}) do |hash, data|
@@ -32,7 +32,7 @@ class SearchController < ApplicationController
         hash
       end
 
-    mps_name_hash = DB[:members_of_parliament].select_hash(:id, :name)
+    mps_name_hash = DB[:mps].select_hash(:id, :name)
 
     render :json => {
       ga_data_hash: ga_data_hash,
@@ -44,9 +44,9 @@ class SearchController < ApplicationController
   def query_server
     speeches = QueryUtils.get_speeches(make_query_params)
     if params[:chart_kind] = 'bar'
-      results = QueryUtils.get_barchart_data(make_query_params)
+      results = WordCountUtils.get_barchart_data(speeches)
     else
-      results = QueryUtils.get_timeseries_data(make_query_params)
+      results = WordCountUtils.get_timeseries_data(speeches)
     end
     render :json => {
       results: results

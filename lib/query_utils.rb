@@ -31,7 +31,7 @@ module QueryUtils
 
   def self.maybe_filter_on_mps(q, o)
     unless (ids = o['mpids']).blank?
-      q = q.where(speeches__member_of_parliament_id: ids)
+      q = q.where(speeches__mp_id: ids)
     end
     q
   end
