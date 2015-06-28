@@ -1,5 +1,13 @@
 var Select = React.createClass({
 
+  getInitialState: function() {
+    return {isExpanded: false};
+  },
+
+  toggleSelectState: function() {
+    this.setState({isExpanded: !this.state.isExpanded})
+  },
+
   render: function() {
     var count = _.keys(this.props.data.selection).length;
     var name = this.props.name;
@@ -23,12 +31,12 @@ var Select = React.createClass({
         mpSelect:     langUtils.number2words(count, 'fem') + ' þingmenn valdir'
       }[name];
     }
-    if (this.props.isExpanded) {
+    if (this.state.isExpanded) {
       var content = <OptionWrap onOptionClick={this.props.onOptionClick} data={this.props.data} parentSelect={name}/>;
     } else {
       var content = '';
     }
-    return <div className='col-md-3 select' data-name={name} onClick={this.props.onSelectClick}>
+    return <div className='col-md-3 select' data-name={name} onClick={this.toggleSelectState}>
       {selectLabel}
       {content}
     </div>

@@ -12,9 +12,6 @@ $(document).ready(function() {
         visibleGAOpts:        [],
         visiblePartyOpts:     [],
         visibleMpOpts:        [],
-        gaSelectExpanded:     false,
-        partySelectExpanded:  false,
-        mpSelectExpanded:     false,
         results:              []
       };
     },
@@ -36,16 +33,6 @@ $(document).ready(function() {
       this.setState({
         results: results
       })
-    },
-
-    toggleSelectState: function() {
-      var obj = {}, selectState = {
-        gaSelect:     'gaSelectExpanded',
-        partySelect:  'partySelectExpanded',
-        mpSelect:     'mpSelectExpanded'
-      }[event.target.dataset.name];
-      obj[selectState] = !this.state[selectState]
-      this.setState(obj)
     },
 
     toggleOption: function(selectEl, id) {
@@ -146,24 +133,18 @@ $(document).ready(function() {
       return <div className="container">
         <Searchbar onQuery={this.handleQuery}/>
         <div className="row filter-wrap">
-          <Select onSelectClick={this.toggleSelectState}
-                  onOptionClick={this.toggleOption}
+          <Select onOptionClick={this.toggleOption}
                   name={'gaSelect'}
                   data={{ids: this.state.visibleGAIds, values: this.state.gaDataHash, selection: this.state.selectedGAs}}
-                  isExpanded={this.state['gaSelectExpanded']}
                   />
-          <Select onSelectClick={this.toggleSelectState}
-                  onOptionClick={this.toggleOption}
+          <Select onOptionClick={this.toggleOption}
                   name={'partySelect'}
                   data={{ids: this.state.visiblePartyIds, values: '', selection: this.state.selectedParties}}
-                  isExpanded={this.state['partySelectExpanded']}
                   />
-          <Select onSelectClick={this.toggleSelectState}
-                  onOptionClick={this.toggleOption}
+          <Select onOptionClick={this.toggleOption}
                   name={'mpSelect'}
                   data={{ids: this.state.visibleMpIds, values: this.state.mpsNameHash, selection: this.state.selectedMps}}
                   titleHash={this.state.mpsNameHash}
-                  isExpanded={this.state['mpSelectExpanded']}
                   />
         </div>
         <TimeseriesWrap />
