@@ -1,19 +1,6 @@
 $(document).ready(function() {
 
-  console.log('ready');
-
-  /* Anticipated structure:
-
-    -SearchBox
-      -SearchBar
-      -Visualizer
-      -SearchResultsTable
-        -SearchResultsTableHeader
-        -SearchResultsRow
-          -SearchResultsColumn?
-  */
-
-  var SearchControls = React.createClass({
+  var App = React.createClass({
     getInitialState: function() {
       return {
         gaDataHash:           {},
@@ -157,7 +144,7 @@ $(document).ready(function() {
 
     render: function() {
       return <div className="container">
-        <SearchBar onQuery={this.handleQuery}/>
+        <Searchbar onQuery={this.handleQuery}/>
         <div className="row filter-wrap">
           <Select onSelectClick={this.toggleSelectState}
                   onOptionClick={this.toggleOption}
@@ -179,214 +166,13 @@ $(document).ready(function() {
                   isExpanded={this.state['mpSelectExpanded']}
                   />
         </div>
-        <Visualizer />
+        <TimeseriesWrap />
+        <BarchartWrap />
         <SearchResultsTable results={this.state.results}/>
       </div>
     }
   });
 
-  var SearchBar = React.createClass({
-
-    maybeQuery: function(event) {
-      if (event.keyCode === 13) this.query();
-    },
-
-    query: function() {
-      var query_string = this.refs.query_string.getDOMNode().value.trim()
-      this.props.onQuery(query_string);
-    },
-
-    render: function() {
-      return (
-        <div className="row" id="searchbar-wrap">
-          <div className="col-md-9">
-            <div className="input-group input-group-lg">
-              <input onKeyDown={this.maybeQuery} type="text" className="form-control" placeholder="Leitarorð, t.d. heimilin" ref="query_string" />
-              <span className="input-group-btn" id="search-icon">
-                <button onClick={this.query} className="btn btn-primary">Search</button>
-              </span>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-  });
-
-  var Select = React.createClass({
-
-    render: function() {
-      var count = _.keys(this.props.data.selection).length;
-      var name = this.props.name;
-      var selectLabel = '';
-      if (count === 0) {
-        selectLabel = {
-          gaSelect:     'Veldu þingár',
-          partySelect:  'Veldu þingflokk',
-          mpSelect:     'Veldu þingmann'
-        }[name];
-      } else if (count === 1) {
-        selectLabel = {
-          gaSelect:     'Eitt þingár valið',
-          partySelect:  'Einn þingflokkur valinn',
-          mpSelect:     'Einn þingmaður valinn'
-        }[name];
-      } else if (count > 1) {
-        selectLabel = {
-          gaSelect:     langUtils.number2words(count, 'neuter') + ' þingár valin',
-          partySelect:  langUtils.number2words(count, 'masc')  + ' þingflokkar valdir',
-          mpSelect:     langUtils.number2words(count, 'fem') + ' þingmenn valdir'
-        }[name];
-      }
-      if (this.props.isExpanded) {
-        var content = <OptionWrap onOptionClick={this.props.onOptionClick} data={this.props.data} parentSelect={name}/>;
-      } else {
-        var content = '';
-      }
-      return <div className='col-md-3 select' data-name={name} onClick={this.props.onSelectClick}>
-        {selectLabel}
-        {content}
-      </div>
-    }
-
-  });
-
-  var OptionWrap = React.createClass({
-
-    render: function() {
-      var ids = this.props.data.ids;
-      var values = this.props.data.values;
-      var selection = this.props.data.selection;
-      var parentSelect = this.props.parentSelect;
-      var componentGetter = function(id) {
-        return {
-          gaSelect:     <GAOption key={id} data={{id: id, values: values[id]}} />,
-          partySelect:  <PartyOption key={id} data={id} />,
-          mpSelect:     <MpOption key={id} data={values[id]} />
-        }[parentSelect]
-      };
-      var iconGetter = function(id) {
-        return selection[id] ? <i className="glyphicon glyphicon-ok"></i> : '';
-      };
-      return <ul className="option-wrap">
-        {_.map(ids, function(id) {
-          return <li className="option" data-value={id} onClick={this.props.onOptionClick.bind(null, parentSelect, id)} key={id}>
-            {iconGetter(id)}
-            {componentGetter(id)}
-          </li>
-        }, this)}
-      </ul>
-    }
-
-  });
-
-  var GAOption = React.createClass({
-
-    render: function() {
-      var values = this.props.data.values;
-      var selected = this.props.selected ? <i className="glyphicon glyphicon-ok"></i> : '';
-      return <div>
-        {this.props.data.id + ' (' + values.year_from + ' - ' + values.year_to + ')'}
-      </div>
-    }
-
-  });
-
-  var PartyOption = React.createClass({
-
-    render: function() {
-      var selected = this.props.selected ? <i className="glyphicon glyphicon-ok"></i> : '';
-      return <div>
-        {this.props.data}
-      </div>
-    }
-
-  });
-
-  var MpOption = React.createClass({
-
-    render: function() {
-      return <div>
-        {this.props.data}
-      </div>
-    }
-
-  });
-
-
-  var Visualizer = React.createClass({
-    render: function() {
-      return (<div></div>);
-    }
-  });
-
-  var SearchResultsTable = React.createClass({
-
-    render: function() {
-      var rows = _.map(this.props.results, function(row_data) {
-        return <SearchResultsRow row_data={row_data} />;
-      })
-      return (
-        <div className="row" id="search-results-wrap">
-          <div className="col-md-9">
-            <table className="table table:hover">
-              <thead>
-                <SearchResultsHeader />
-              </thead>
-              <tbody>
-                {rows}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      );
-    }
-  });
-
-  var SearchResultsHeader = React.createClass({
-    render: function() {
-      return (
-        <tr>
-          <th>MP</th>
-          <th>Count</th>
-        </tr>
-      );
-    }
-  });
-
-  var SearchResultsRow = React.createClass({
-    render: function() {
-      return (
-        <tr>
-          <td>{this.props.row_data[0]}</td>
-          <td>{this.props.row_data[1]}</td>
-        </tr>
-      );
-    }
-  });
-
-  var SearchResultsColumn = React.createClass({
-    render: function() {
-      return (
-        <span></span>
-      );
-    }
-  });
-
-  // Get init data
-  // Using backbone for this since react is not playing
-  // nice with boostrap select
-  /*$.get('/search/init_data', {}, function(response) {
-
-    /*var filter_view = new FilterView({
-      el:               $('#main'),
-      ga_data_hash:     response.ga_data_hash,
-      parties_mps_hash: response.parties_mps_hash,
-      mps_name_hash:    response.mps_name_hash
-    })
-
-  }.bind(this)); */
-
-  React.render(<SearchControls />, $('#main')[0]);
+  React.render(<App />, $('#main')[0]);
 
 });

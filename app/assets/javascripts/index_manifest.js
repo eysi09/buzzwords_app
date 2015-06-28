@@ -1,4 +1,9 @@
 //= require underscore
 //= require backbone
 //= require index
+//= require searchbar
+//= require filters
+//= require timeseries
+//= require barchart
+//= require search_results_table
 //= require lang_utils
