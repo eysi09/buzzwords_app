@@ -102,14 +102,6 @@ $(document).ready(function() {
       });
     },
 
-    // Chart kinds: 
-    //  bar
-    //    year, 
-    //    party, 
-    //    mps
-    //  timeseries
-    //    party (default), 
-    //    mp
     handleQuery: function(query_string) {
       if (query_string) {
         var data = {
@@ -117,8 +109,6 @@ $(document).ready(function() {
           gaids:          _.keys(this.state.selectedGAs),
           partyids:       _.keys(this.state.selectedParties),
           mpids:          _.keys(this.state.selectedMps),
-          chart_kind:     'bar',
-          group_by:       'mps'
         };
         self = this;
         $.get('/search/query_server', data, function(response) {

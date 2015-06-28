@@ -5,6 +5,7 @@ var Select = React.createClass({
   },
 
   toggleSelectState: function() {
+    debugger
     this.setState({isExpanded: !this.state.isExpanded})
   },
 
@@ -77,7 +78,6 @@ var GAOption = React.createClass({
 
   render: function() {
     var values = this.props.data.values;
-    var selected = this.props.selected ? <i className="glyphicon glyphicon-ok"></i> : '';
     return <div>
       {this.props.data.id + ' (' + values.year_from + ' - ' + values.year_to + ')'}
     </div>
@@ -88,7 +88,6 @@ var GAOption = React.createClass({
 var PartyOption = React.createClass({
 
   render: function() {
-    var selected = this.props.selected ? <i className="glyphicon glyphicon-ok"></i> : '';
     return <div>
       {this.props.data}
     </div>
