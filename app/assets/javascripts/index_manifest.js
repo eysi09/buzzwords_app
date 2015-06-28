@@ -1,5 +1,7 @@
 //= require underscore
 //= require backbone
+//= require moment
+//= require d3
 //= require index
 //= require searchbar
 //= require filters
@@ -7,3 +9,4 @@
 //= require barchart
 //= require search_results_table
 //= require lang_utils
+//= require charts/timeseries

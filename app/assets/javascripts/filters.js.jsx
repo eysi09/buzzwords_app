@@ -1,7 +1,9 @@
 var Select = React.createClass({
 
   getInitialState: function() {
-    return {isExpanded: false};
+    return {
+      isExpanded: false
+    };
   },
 
   toggleSelectState: function() {

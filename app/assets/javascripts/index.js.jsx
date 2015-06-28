@@ -115,14 +115,16 @@ $(document).ready(function() {
         };
         self = this;
         $.get('/search/query_server', data, function(response) {
-          self.onQueryResponse(response.results);
+          self.handleQueryResponse(response.results);
         });
       } else {
-        this.onQueryResponse([]);
+        this.handleQueryResponse([]);
       }
     },
 
     render: function() {
+      // <SearchResultsTable data={this.state.results}/>
+      // Re-insert below barchartwrap!
       return <div className="container">
         <Searchbar onQuery={this.handleQuery}/>
         <div className="row filter-wrap">
@@ -140,9 +142,8 @@ $(document).ready(function() {
                   titleHash={this.state.mpsNameHash}
                   />
         </div>
-        <TimeseriesWrap />
-        <BarchartWrap />
-        <SearchResultsTable results={this.state.results}/>
+        <TimeseriesWrap data={this.state.results}/>
+        <BarchartWrap data={this.state.results}/>
       </div>
     }
   });

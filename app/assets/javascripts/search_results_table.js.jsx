@@ -1,8 +1,8 @@
 var SearchResultsTable = React.createClass({
 
   render: function() {
-    var rows = _.map(this.props.results, function(row_data) {
-      return <SearchResultsRow row_data={row_data} />;
+    var rows = _.map(this.props.data, function(row_data) {
+      return <SearchResultsRow row_data={row_data}/>;
     })
     return (
       <div className="row" id="search-results-wrap">
