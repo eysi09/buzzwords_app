@@ -5,7 +5,6 @@ var Select = React.createClass({
   },
 
   toggleSelectState: function() {
-    debugger
     this.setState({isExpanded: !this.state.isExpanded})
   },
 
@@ -64,7 +63,7 @@ var OptionWrap = React.createClass({
     };
     return <ul className="option-wrap">
       {_.map(ids, function(id) {
-        return <li className="option" data-value={id} onClick={this.props.onOptionClick.bind(null, parentSelect, id)} key={id}>
+        return <li className="option" data-id={id} data-parentselect={parentSelect} onClick={this.props.onOptionClick} key={id}>
           {iconGetter(id)}
           {componentGetter(id)}
         </li>

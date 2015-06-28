@@ -35,13 +35,16 @@ $(document).ready(function() {
       })
     },
 
-    toggleOption: function(selectEl, id) {
-      var id = selectEl === 'partySelect' ? id : parseInt(id);
+    toggleOption: function(event) {
+      event.stopPropagation();
+      var data = event.target.parentNode.dataset;
+      var parentSelect = data.parentselect;
+      var id = parentSelect === 'partySelect' ? data.id : parseInt(data.id);
       var selectionHolder = {
         gaSelect:     this.state.selectedGAs,
         partySelect:  this.state.selectedParties,
         mpSelect:     this.state.selectedMps
-      }[selectEl]
+      }[parentSelect]
       if (selectionHolder[id]) delete selectionHolder[id];
       else selectionHolder[id] = true;
       this.updateVisibleOptions();
