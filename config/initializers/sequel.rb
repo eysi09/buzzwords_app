@@ -14,4 +14,4 @@ end
 DB = Sequel::Model.db = Sequel.connect(config)
 Sequel.default_timezone = :utc
 DB.logger = Rails.logger
-DB.extension :pg_array
+DB.extension :pg_array, :pg_json

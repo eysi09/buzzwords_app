@@ -46,13 +46,39 @@ module WordCountUtils
     mps_count.sort_by{ |x,y| y }.reverse
   end
 
-  def self.get_barchart_data(speeches)
+  # If query returns results but word freq not found for query string
+  # e.g. if query_string === 'hello.' but word_freq contains 'hello'
+  # So we count again for those instances
+  def self.fix_results(speeches, query_string, needs_a_fixin)
+    needs_a_fixin.each do |i|
+      speeches[i][:word_freq] = {query_string => speeches[i][:content].scan(query_string).count}
+    end
+    speeches
   end
 
   def self.get_timeseries_data(speeches)
   end
 
+  def self.update_speeches_word_count
+    t1 = Time.now
+    puts 'Started updating speeches count...'
+    # Use model cause of issue with foreign chars
+    Speech.where(word_freq: nil).each do |speech|
+      speech.word_freq = self.get_word_freq_by_content(speech.content)
+      speech.save
+    end
+    t2 = Time.now
+    puts 'Finished updating speeches count...'
+    puts "Time elapsed #{(t2-t1).round(2)} sec"
+  end
+
   private
+
+  def self.get_word_freq_by_content(content)
+    word_freq = Hash.new(0)
+    content.split(' ').each{ |word| word_freq[self.clean_str(word)] +=1 }
+    word_freq
+  end
 
   def self.get_speeches_by_word(word, selection, opts = {})
     conds    = opts[:general_assemblies] ? {general_assembly_id: opts[:general_assemblies]} : {}

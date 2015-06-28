@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150627122356) do
+ActiveRecord::Schema.define(:version => 20150627124529) do
 
   create_table "general_assemblies", :id => false, :force => true do |t|
     t.integer "id",                     :null => false

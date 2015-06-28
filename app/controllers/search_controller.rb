@@ -42,15 +42,34 @@ class SearchController < ApplicationController
   end
 
   def query_server
-    speeches = QueryUtils.get_speeches(make_query_params)
-    if params[:chart_kind] = 'bar'
-      results = WordCountUtils.get_barchart_data(speeches)
-    else
-      results = WordCountUtils.get_timeseries_data(speeches)
+    start_logging
+    query_results = QueryUtils.get_speeches(make_query_params)
+    speeches = query_results[:speeches]
+    needs_a_fixin = query_results[:needs_a_fixin]
+    unless (needs_a_fixin.blank?)
+      speeches = WordCountUtils.fix_results(speeches, params[:query_string], needs_a_fixin)
     end
+    speeches.each{|s| s.except!(:content)} # Do while iterating if gets slow
+    end_logging
+
     render :json => {
-      results: results
+      results: speeches
     }
+  end
+
+  def start_logging
+    @t1 = Time.now
+    Rails.logger.info '*******'
+    Rails.logger.info 'Load starts...'
+    Rails.logger.info '*******'
+  end
+
+  def end_logging
+    t2 = Time.now
+    Rails.logger.info '*******'
+    Rails.logger.info 'Load ends...'
+    Rails.logger.info "Time elapsed #{(t2-@t1).round(2)} sec"
+    Rails.logger.info '*******'
   end
 
   def make_query_params
