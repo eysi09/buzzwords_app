@@ -11,7 +11,7 @@ class AddIndexes < ActiveRecord::Migration
   end
 
   def down
-  	remove_index :general_assemblies, :name => 'index_id_on_general_assemblies'
+  	remove_index :general_assemblies, :name => 'index_general_assemblies_on_id'
   	remove_index :mps_x_general_assemblies, :name => 'index_mps_x_general_assemblies_on_mp_id'
   	remove_index :mps_x_general_assemblies, :name => 'index_mps_x_general_assemblies_on_general_assembly_id'
   	remove_index :mps_x_general_assemblies, :name => 'index_mps_x_general_assemblies_on_party'

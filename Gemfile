@@ -15,6 +15,7 @@ gem 'normalize-rails'
 gem 'bootstrap-sass', '~> 3.3.4'
 gem 'autoprefixer-rails'
 gem 'sass-rails', '>= 3.2'
+gem 'unicode'
 
 # Gems used only for assets and not required
 # in production environments by default.

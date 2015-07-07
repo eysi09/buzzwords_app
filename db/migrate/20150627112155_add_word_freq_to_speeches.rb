@@ -1,9 +1,9 @@
 class AddWordFreqToSpeeches < ActiveRecord::Migration
   def up
-  	add_column :speeches, :word_freq, :text
+  	add_column :speeches, :word_freq, :jsonb
   end
 
   def down
-  	remove_column :speeches, :word_freq, :text
+  	remove_column :speeches, :word_freq, :jsonb
   end
 end

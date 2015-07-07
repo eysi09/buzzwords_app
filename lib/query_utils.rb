@@ -2,8 +2,8 @@ module QueryUtils
 
   def self.get_speeches(opts)
     self.start_logging
-    query_string = opts[:query_string]
-    q = DB[:speeches].where(Sequel.ilike(:content, /#{query_string}.*/))
+    words = opts[:words]
+    q = DB[:speeches].where(Sequel.lit(self.where_words(words)))
 
     q = self.maybe_filter_on_general_assembly q, opts
     q = self.maybe_filter_on_party            q, opts
@@ -11,19 +11,22 @@ module QueryUtils
     q = self.maybe_filter_on_date_from        q, opts
     q = self.maybe_filter_on_date_to          q, opts
 
+    q = q.select(:id,
+      :date,
+      :mp_id,
+      :general_assembly_id,
+      :party,
+      :url,
+      Sequel.lit(self.select_word_freq(words))
+    )
+    q = q.order_by(:date)
+
     speeches = q.all
     self.end_logging
-    needs_a_fixin = []
-    speeches.each_with_index do |speech, index|
-      # Shouldn't need to JSON parse. Needs a fix
-      speech[:word_freq] = JSON.parse(speech[:word_freq]).select{|k,v| k == opts[:query_string]}
-      needs_a_fixin.push(index) if speech[:word_freq].blank?
-    end
-    result = {
-      speeches: speeches,
-      needs_a_fixin: needs_a_fixin
-    }
+    speeches
   end
+
+  private
 
   def self.start_logging
     @t1_q = Time.now
@@ -38,6 +41,28 @@ module QueryUtils
     Rails.logger.info 'Query ends...'
     Rails.logger.info "Time elapsed #{(t2_q-@t1_q).round(2)} sec"
     Rails.logger.info '*******'
+  end
+
+  def self.where_words(words)
+    expr = %Q{word_freq ?| array['#{words.join("', '")}']}
+  end
+
+  def self.select_word_freq(words)
+    w = words[0]
+    expr = %Q{word_freq #> '{"#{w}"}' as wf_#{w}}
+    words[1..words.length].each{|w| expr += %Q{, word_freq #>> '{"#{w}"}' as wf_#{w}}}
+    expr
+  end
+
+  # Do all processing_in one iteration for performance sake
+  def self.process_results(speeches, query_string, parse_content = false)
+    speeches.each do |speech|
+      speech[:word_freq] = JSON.parse(speech[:word_freq]).select{|k,v| k == query_string}
+      if speech[:word_freq].blank? && parse_content
+        speech[:word_freq] = {query_string => speech[:content].scan(query_string).count}
+      end
+      speech.delete(:content)
+    end
   end
 
   def self.maybe_filter_on_general_assembly(q, o)

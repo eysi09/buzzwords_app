@@ -5,7 +5,7 @@ var Searchbar = React.createClass({
   },
 
   query: function() {
-    var query_string = this.refs.query_string.getDOMNode().value.trim()
+    var query_string = this.refs.query_string.getDOMNode().value.trim();
     this.props.onQuery(query_string);
   },
 

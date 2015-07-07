@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150627124529) do
+ActiveRecord::Schema.define(:version => 20150701153217) do
 
   create_table "general_assemblies", :id => false, :force => true do |t|
     t.integer "id",                     :null => false
@@ -38,19 +38,7 @@ ActiveRecord::Schema.define(:version => 20150627124529) do
   add_index "mps_x_general_assemblies", ["mp_id"], :name => "index_mps_x_general_assemblies_on_mp_id"
   add_index "mps_x_general_assemblies", ["party"], :name => "index_mps_x_general_assemblies_on_party"
 
-  create_table "speeches", :force => true do |t|
-    t.datetime "date",                :null => false
-    t.integer  "mp_id",               :null => false
-    t.integer  "general_assembly_id", :null => false
-    t.string   "party"
-    t.text     "content"
-    t.string   "url"
-    t.text     "word_freq"
-  end
-
-  add_index "speeches", ["date"], :name => "index_speeches_on_date"
-  add_index "speeches", ["general_assembly_id"], :name => "index_speeches_on_general_assembly_id"
-  add_index "speeches", ["mp_id"], :name => "index_speeches_on_mp_id"
-  add_index "speeches", ["party"], :name => "index_speeches_on_party"
+# Could not dump table "speeches" because of following StandardError
+#   Unknown type 'jsonb' for column 'word_freq'
 
 end

@@ -62,10 +62,9 @@ module WordCountUtils
   def self.update_speeches_word_count
     t1 = Time.now
     puts 'Started updating speeches count...'
-    # Use model cause of issue with foreign chars
-    Speech.where(word_freq: nil).each do |speech|
-      speech.word_freq = self.get_word_freq_by_content(speech.content)
-      speech.save
+    DB[:speeches].where(word_freq: nil).each do |s|
+      word_freq = self.get_word_freq_by_content(s[:content])
+      DB[:speeches].where(id: s[:id]).update(word_freq: Sequel.pg_jsonb(word_freq))
     end
     t2 = Time.now
     puts 'Finished updating speeches count...'
@@ -97,7 +96,8 @@ module WordCountUtils
   end
 
   def self.clean_str(word)
-    word.downcase
+    # Remove punctuation and the sorts from beginning and end of word
+    Unicode::downcase word.gsub(/\b[-.,()&$#!\[\]{}"']+\B|\B[-.,()&$#!\[\]{}"']+\b/, "").strip
   end
 
   def self.get_speeches(conds)

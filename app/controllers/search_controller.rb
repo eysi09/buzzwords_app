@@ -43,13 +43,7 @@ class SearchController < ApplicationController
 
   def query_server
     start_logging
-    query_results = QueryUtils.get_speeches(make_query_params)
-    speeches = query_results[:speeches]
-    needs_a_fixin = query_results[:needs_a_fixin]
-    unless (needs_a_fixin.blank?)
-      speeches = WordCountUtils.fix_results(speeches, params[:query_string], needs_a_fixin)
-    end
-    speeches.each{|s| s.except!(:content)} # Do while iterating if gets slow
+    speeches = QueryUtils.get_speeches(make_query_params)
     end_logging
 
     render :json => {
@@ -74,11 +68,10 @@ class SearchController < ApplicationController
 
   def make_query_params
     {
-     query_string:  params[:query_string],
-     gaids:         params[:gaids],
-     partyids:      params[:partyids],
-     mpids:         params[:mpids],
-     group_by:      params[:group_by]
+     words:     params[:query_string].split(',').map{|w| w.strip.downcase},
+     gaids:     params[:gaids],
+     partyids:  params[:partyids],
+     mpids:     params[:mpids],
     }
   end
 

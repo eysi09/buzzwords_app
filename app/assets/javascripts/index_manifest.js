@@ -10,3 +10,4 @@
 //= require search_results_table
 //= require lang_utils
 //= require charts/timeseries
+//= require charts/d3tip

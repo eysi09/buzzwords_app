@@ -3,16 +3,17 @@ $(document).ready(function() {
   var App = React.createClass({
     getInitialState: function() {
       return {
-        gaDataHash:           {},
-        partiesMpsHash:       {},
-        mpsNameHash:          {},
-        selectedGAs:          {},
-        selectedParties:      {},
-        selectedMps:          {},
-        visibleGAOpts:        [],
-        visiblePartyOpts:     [],
-        visibleMpOpts:        [],
-        results:              []
+        gaDataHash:       {},
+        partiesMpsHash:   {},
+        mpsNameHash:      {},
+        selectedGAs:      {},
+        selectedParties:  {},
+        selectedMps:      {},
+        visibleGAOpts:    [],
+        visiblePartyOpts: [],
+        visibleMpOpts:    [],
+        results:          null,
+        timeSeriesData:   null
       };
     },
 
@@ -25,14 +26,57 @@ $(document).ready(function() {
           mpsNameHash:    response.mps_name_hash,
           visibleGAIds:   _.keys(response.ga_data_hash).sort().reverse() // Always stays the same
         });
+
         this.updateVisibleOptions();
       }.bind(this));
     },
 
-    handleQueryResponse: function(results) {
+    handleQueryResponse: function(results, query_string, shouldProcess) {
       this.setState({
-        results: results
-      })
+        results: results,
+        timeSeriesData: this.processTimeSeriesData(results)
+      });
+    },
+
+    processTimeSeriesData: function(data) {
+      var processedData = _.chain(data)
+        .reduce(function(memo, d) {
+          var word_freq = {};
+          _.each(d, function(val, key) {
+            if (key.indexOf('wf_') > -1 ) word_freq[key.split('wf_')[1]] = parseInt(val) || 0;
+          });
+          var date = moment(d.date).format('MMDDYYYY');
+          if (current_val = memo[date]) {
+            var new_val = {};
+            _.each(current_val, function(val, key) { new_val[key] = (word_freq[key] || 0) + val });
+            memo[date] = new_val;
+          } else {
+            memo[date] = word_freq;
+          }
+          return memo;
+        }, {})
+        .reduce(function(memo, val, key) {
+          memo.push(_.extend({date: moment(key, 'MMDDYYYY').toDate()}, val));
+          return memo;
+        }, [])
+        .sortBy('date')
+        .value();
+      console.log('timseries data processed...');
+      return processedData;
+    },
+
+    // Stolen from: http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string
+    // not in use
+    occurrences: function(string, subString, allowOverlapping) {
+      string+=""; subString+="";
+      if (subString.length<=0) return string.length + 1;
+      var n = 0, pos = 0;
+      var step = allowOverlapping ? 1 : subString.length;
+      while(true) {
+        pos = string.indexOf(subString,pos);
+        if (pos >= 0) { n++; pos += step; } else break;
+      }
+      return n;
     },
 
     toggleOption: function(event) {
@@ -115,7 +159,7 @@ $(document).ready(function() {
         };
         self = this;
         $.get('/search/query_server', data, function(response) {
-          self.handleQueryResponse(response.results);
+          self.handleQueryResponse(response.results, query_string);
         });
       } else {
         this.handleQueryResponse([]);
@@ -125,6 +169,8 @@ $(document).ready(function() {
     render: function() {
       // <SearchResultsTable data={this.state.results}/>
       // Re-insert below barchartwrap!
+      var timeseries = (d = this.state.timeSeriesData) ? <TimeseriesWrap data={d}/> : '';
+      var barchart = (d = this.state.results) ? <BarchartWrap data={d}/> : '';
       return <div className="container">
         <Searchbar onQuery={this.handleQuery}/>
         <div className="row filter-wrap">
@@ -142,8 +188,8 @@ $(document).ready(function() {
                   titleHash={this.state.mpsNameHash}
                   />
         </div>
-        <TimeseriesWrap data={this.state.results}/>
-        <BarchartWrap data={this.state.results}/>
+        {timeseries}
+        {barchart}
       </div>
     }
   });

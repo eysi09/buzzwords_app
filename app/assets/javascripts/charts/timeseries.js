@@ -5,103 +5,101 @@
 //    width (int)
 //    height (int)
 //    datetimeformat (string): For parsing datestrings and converting to JS date objects
-//    date_key (string): For finding the date string in the data
-//    y_axis_label (string)
+//    dateKey (string): For finding the date string in the data
+//    yAxisLabel (string)
 //    dp: Dataprocessor
 //    load_key (string or array): For getting data from data processor
-//    y_tick_format (string) [optional]: For formatting y axis values. See d3 tickformat documentation
+//    yTickFormat (string) [optional]: For formatting y axis values. See d3 tickformat documentation
 //    is_processed (boolean): [optional]: If true, skips data processing (Note: data must be sorted if processing is skipped)
 //    format_date (function) [optional]: Formats date for tooltip
-//    format_name (function) [optional]: Formats name for tooltip and legend
+//    formatName (function) [optional]: Formats name for tooltip and legend
 //    format_y_val (function) [optional]: Formats y value for tooltip and axis
 
 var timeseriesChart = {};
 
-timeseriesChart.create = function(el, opts) {
+timeseriesChart.initalize = function(el, opts) {
 
-  var new_chart = {}
-
+  var newChart = {}
   // Global params
-  new_chart.el             = el;
-  new_chart.width          = opts.width;
-  new_chart.height         = opts.height;
-  new_chart.datetimeformat = opts.datetimeformat;
-  new_chart.date_key       = opts.date_key;
-  new_chart.y_axis_label   = opts.y_axis_label;
-  new_chart.y_tick_format  = opts.y_tick_format;
-  new_chart.roll_curtain   = opts.roll_curtain;
+  newChart.el           = el;
+  newChart.width        = opts.width;
+  newChart.height       = opts.height;
+  newChart.dateKey      = opts.dateKey;
+  newChart.yAxisLabel   = opts.yAxisLabel;
+  newChart.yTickFormat  = opts.yTickFormat;
   // Formatting functions
-  var format_date       = opts.format_date ? opts.format_date : function(d) { return d};
-  var format_y_val      = opts.format_y_val ? opts.format_y_val : function(v) { return v};
-  new_chart.format_name      = opts.format_name ? opts.format_name : function(n) { return n};
+  newChart.formatName = opts.formatName ? opts.formatName : function(n) { return n};
+  newChart.formatYVal = opts.formatYVal ? opts.formatName : function(n) { return n};
+  newChart.formatDate = opts.formatDate ? opts.formatName : function(n) { return moment(n).format('DD-MM-YYYY')};
 
-  var self = new_chart;
+
+  var self = newChart;
 
   var margin = {top: 20, right: 80, bottom: 30, left: 50};
-  new_chart.width = new_chart.width - margin.left - margin.right;
-  new_chart.height = new_chart.height - margin.top - margin.bottom;
+  newChart.width = newChart.width - margin.left - margin.right;
+  newChart.height = newChart.height - margin.top - margin.bottom;
 
-  new_chart.x = d3.time.scale()
-      .range([0, new_chart.width]);
+  newChart.x = d3.time.scale()
+      .range([0, newChart.width]);
 
-  new_chart.y = d3.scale.linear()
-      .range([new_chart.height, 0]);
+  newChart.y = d3.scale.linear()
+      .range([newChart.height, 0]);
 
-  new_chart.xAxis = d3.svg.axis()
-      .scale(new_chart.x)
+  newChart.xAxis = d3.svg.axis()
+      .scale(newChart.x)
       .orient("bottom");
 
-  new_chart.yAxis = d3.svg.axis()
-      .scale(new_chart.y)
+  newChart.yAxis = d3.svg.axis()
+      .scale(newChart.y)
       .orient("left");
 
-  if (f = new_chart.y_tick_format) {
-    new_chart.yAxis.tickFormat(d3.format(f));
+  if (f = newChart.yTickFormat) {
+    newChart.yAxis.tickFormat(d3.format(f));
   }
 
-  new_chart.line = d3.svg.line()
+  newChart.line = d3.svg.line()
       .interpolate("linear")
-      .x(function(d) { return new_chart.x(d.date); })
-      .y(function(d) { return new_chart.y(d.y_val); });
+      .x(function(d) { return newChart.x(d.date); })
+      .y(function(d) { return newChart.y(d.y_val); });
 
-  /*new_chart.tip = d3.tip()
+  newChart.tip = d3.tip()
       .attr("class", "d3-tip")
       .offset([0, 10])
       .direction("e")
       .html(function(d) {
-        var date = format_date(d.date);
+        var date = self.formatDate(d.date);
         var html = "<span class='date'>" + date + "</span>";
         _.each(d, function(val, key) {
           if (key !== 'date') {
-            var name = self.format_name(key);
-            var y_val = format_y_val(val);
+            var name = self.formatName(key);
+            var y_val = self.formatYVal(val);
             html += "<br><span>" + name + ":  </span><strong>" + y_val + "</strong>";
           }
         })
         return html;
-      });*/
+      });
 
   var svg = d3.select(el).append("svg")
-      .attr("width", new_chart.width + margin.left + margin.right)
-      .attr("height", new_chart.height + margin.top + margin.bottom)
+      .attr("width", newChart.width + margin.left + margin.right)
+      .attr("height", newChart.height + margin.top + margin.bottom)
     .append("g")
       .attr("class", "timeseries")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-      .call(new_chart.tip);
+      .call(newChart.tip);
 
-  new_chart = _.extend(_.clone(this), new_chart);
-  new_chart.render();
-  return new_chart;
+  newChart = _.extend(_.clone(this), newChart);
+  newChart.render([]);
+  return newChart;
 
 },
 
-timeseriesChart.render = function(data) {
+timeseriesChart.render = function(data, rollCurtain) {
   var self = this;
   var color = d3.scale.category10();
   color.domain(d3.keys(data[0]).filter(function(key) { return key !== 'date'; }));
 
   // Group and count
-  var line_data = color.domain().map(function(name) {
+  var lineData = color.domain().map(function(name) {
     return {
       name: name,
       values: data.map(function(d) {
@@ -112,10 +110,8 @@ timeseriesChart.render = function(data) {
     };
   });
 
-  //var end_date = moment().add(1, 'days').startOf('day').toDate();
-  //this.x.domain([data[0].date, end_date]); // Dates are ordered
   this.x.domain(d3.extent(data, function(d) { return d.date; }));
-  this.y.domain([0, d3.max(line_data, function(d) { return d3.max(d.values, function(v) { return v.y_val; }); })
+  this.y.domain([0, d3.max(lineData, function(d) { return d3.max(d.values, function(v) { return v.y_val; }); })
   ]);
 
   var svg = d3.select(this.el).select(".timeseries");
@@ -143,7 +139,7 @@ timeseriesChart.render = function(data) {
         .attr("y", 6)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
-        .text(this.y_axis_label);
+        .text(this.yAxisLabel);
   } else {
     svg.selectAll(".y.axis")
       .transition()
@@ -152,8 +148,9 @@ timeseriesChart.render = function(data) {
   }
 
   // Lines
+  // Change data id for nicer transition!
   var lineGroup = svg.selectAll(".line-group")
-      .data(line_data, function(d) { return d.name })
+      .data(lineData, function(d) { return d.name })
 
   var onLineGroupEnter = lineGroup.enter().append("g")
       .attr("class", "line-group")
@@ -174,8 +171,8 @@ timeseriesChart.render = function(data) {
       .attr("x", 3)
       .attr("dy", ".35em")
     .transition()
-      .delay(this.roll_curtain ? 1500 : 0)
-      .text(function(d) { return self.format_name(d.name); })
+      .delay(rollCurtain ? 1700 : 0)
+      .text(function(d) { return self.formatName(d.name); })
 
   lineGroup.exit()
     .transition()
@@ -204,13 +201,13 @@ timeseriesChart.render = function(data) {
       .attr("cy", function(d, i) { return self.y(d.y_val) })
       .attr("fill", function(d, i) { return color(d.name) })
     .transition()
-      .delay(this.roll_curtain ? 1500: 0)
+      .delay(rollCurtain ? 1700 : 0)
       .attr("r", 3);
 
   points.exit().remove();
 
   // Rollback curtain for smooth rendering (only on first render)
-  if (this.roll_curtain) {
+  if (rollCurtain) {
     var curtain = svg.append('rect')
       .attr('x', -1 * this.width)
       .attr('y', -1 * this.height)
@@ -226,7 +223,6 @@ timeseriesChart.render = function(data) {
       .select('rect.curtain')
       .attr('width', 0);
 
-    this.roll_curtain = false;
   }
   
   // Vertical line to show on mouse over (only initalize once)
@@ -255,7 +251,7 @@ timeseriesChart.render = function(data) {
       .on("mousemove", mousemove);
 
   // For calculating vLine's position
-  /*var bisectDate = d3.bisector(function(d) { return d.date; }).left;
+  var bisectDate = d3.bisector(function(d) { return d.date; }).left;
 
   function mousemove() {
     if (data.length > 1) {
@@ -272,7 +268,7 @@ timeseriesChart.render = function(data) {
     vLine.attr("x2", self.x(d.date));
     vLine.attr("y2", self.height);
     self.tip.show(d, vLine[0][0]);
-  }*/
+  }
 },
 
 timeseriesChart.remove = function() {

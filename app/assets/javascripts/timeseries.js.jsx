@@ -2,53 +2,41 @@ var TimeseriesWrap = React.createClass({
 
   getInitialState: function() {
     return {
-      processedData: null
+      firstRender:  true,
+      chart:        null
     };
   },
   
   componentDidMount: function() {
+    console.log('mounting timeseries...')
     var el = this.getDOMNode();
     this.initalizeChart(el);
   },
 
   componentDidUpdate: function() {
-    this.processData();
+    console.log('updating timeseries...')
     this.updateChart();
+  },
+
+  componentWillReceiveProps: function() {
+    this.setState({firstRender: false});
   },
 
   initalizeChart: function(el) {
     var opts = {
       width:        799,
       height:       400,
-      date_key:     'date',
+      dateKey:     'date',
       yAxisLabel:   'Tíðni',
       yTickFormat:  'd',
-      rollCurtain:  true,
-      format_date:  function(d) { return moment(d).format('YYYY-MM-DD')},
     }
-    //timeseriesChart.initalize(el, opts);
+    this.setState({chart: timeseriesChart.initalize(el, opts)});
   },
 
-  processData: function() {
-    if ((data = this.props.data).length > 0) {
-      console.log(moment().format());
-      var processedData = _.chain(data)
-        .reduce(function(memo, d) {
-          var date = moment(d.date).format('MMDDYYYY');
-          memo[date] = d.word_freq;
-          return memo;
-        }, {})
-        .reduce(function(memo, val, key) {
-          memo.push(_.extend({date: key}, val));
-          return memo;
-        }, [])
-        .value();
-      console.log(moment().format());
-    }
-  },
+
 
   updateChart: function() {
-    //timeseriesChart.render(this.state.processedData);
+    if ((d = this.props.data).length > 0) this.state.chart.render(d, this.state.firstRender);
   },
 
   render: function() {
