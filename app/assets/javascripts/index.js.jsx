@@ -12,6 +12,7 @@ $(document).ready(function() {
         visibleGAOpts:    [],
         visiblePartyOpts: [],
         visibleMpOpts:    [],
+        queryWords:       [],
         results:          null,
         timeSeriesData:   null
       };
@@ -32,40 +33,70 @@ $(document).ready(function() {
     },
 
     handleQueryResponse: function(results, query_string, shouldProcess) {
+      var queryWords = _.map(query_string.split(','), function(w) { return w.toLowerCase().trim() });
       this.setState({
         results: results,
-        timeSeriesData: this.processTimeSeriesData(results)
+        queryWords: queryWords,
+        timeSeriesData: this.processTimeSeriesData(results, 'DDMMYYYY', 'parties', queryWords)
       });
     },
 
-    processTimeSeriesData: function(data) {
+    processTimeSeriesData: function(data, dateGran, splitBy, queryWords) {
+      console.log('Start processing timesseries data at ' + moment().format('HH:mm:ss'));
+      var wfKeyBuilder = function(d, w) {
+        if (splitBy === 'words') {
+          return w;
+        } else if (splitBy === 'parties') {
+          return d.party + ' ' + w;
+        } else { // mp
+          return d.mp_id + ' ' + w;
+        }
+      };
+      var mergeAndAdd = function(obj1, obj2) {
+        var merged = $.extend({}, obj1);
+        _.each(obj2, function(val, key) {
+          merged[key] = merged[key] ? (merged[key] + val) : val;
+        });
+        return merged;
+      };
+      var initializeCount = function() {
+        var obj = {}
+        _.each(queryWords, function(w) {
+          _.each(splitByKeys, function(k) {
+            key = k ? (k + ' ' + w) : w
+            obj[key] = 0;
+          });
+        });
+        return obj;
+      };
+
+      if (splitBy === 'words')        var splitByKeys = [''];
+      else if (splitBy === 'parties') var splitByKeys = _.uniq(_.map(data, function(d) { return d.party }));
+      else                            var splitByKeys = _.uniq(_.map(data, function(d) { return d.mp_id }));
       var processedData = _.chain(data)
         .reduce(function(memo, d) {
-          var word_freq = {};
-          _.each(d, function(val, key) {
-            if (key.indexOf('wf_') > -1 ) word_freq[key.split('wf_')[1]] = parseInt(val) || 0;
-          });
-          var date = moment(d.date).format('MMDDYYYY');
-          if (current_val = memo[date]) {
-            var new_val = {};
-            _.each(current_val, function(val, key) { new_val[key] = (word_freq[key] || 0) + val });
-            memo[date] = new_val;
-          } else {
-            memo[date] = word_freq;
-          }
+          var wordFreq = {};
+          var party = d.party;
+          _.each(queryWords, function(w) {
+            wordFreq[wfKeyBuilder(d, w)] = parseInt(d['wf_' + w]) || 0;
+          })
+          var date = moment(d.date).format(dateGran)
+          if (!memo[date]) memo[date] = initializeCount();
+          memo[date] = mergeAndAdd(memo[date], wordFreq);
           return memo;
         }, {})
         .reduce(function(memo, val, key) {
-          memo.push(_.extend({date: moment(key, 'MMDDYYYY').toDate()}, val));
+          memo.push(_.extend({date: moment(key, dateGran).toDate()}, val));
           return memo;
         }, [])
         .sortBy('date')
         .value();
-      console.log('timseries data processed...');
+      console.log('Finish processing timeseries data at ' + moment().format('HH:mm:ss'));
+      console.log(processedData);
       return processedData;
     },
 
-    // Stolen from: http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string
+    // Borrowed from: http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string
     // not in use
     occurrences: function(string, subString, allowOverlapping) {
       string+=""; subString+="";

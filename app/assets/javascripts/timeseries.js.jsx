@@ -24,8 +24,8 @@ var TimeseriesWrap = React.createClass({
 
   initalizeChart: function(el) {
     var opts = {
-      width:        799,
-      height:       400,
+      width:        960,
+      height:       500,
       dateKey:     'date',
       yAxisLabel:   'Tíðni',
       yTickFormat:  'd',

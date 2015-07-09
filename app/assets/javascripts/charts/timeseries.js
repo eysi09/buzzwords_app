@@ -58,13 +58,13 @@ timeseriesChart.initalize = function(el, opts) {
   }
 
   newChart.line = d3.svg.line()
-      .interpolate("linear")
+      .interpolate("cardinal")
       .x(function(d) { return newChart.x(d.date); })
       .y(function(d) { return newChart.y(d.y_val); });
 
   newChart.tip = d3.tip()
       .attr("class", "d3-tip")
-      .offset([0, 10])
+      .offset([-150, 10])
       .direction("e")
       .html(function(d) {
         var date = self.formatDate(d.date);
@@ -110,7 +110,7 @@ timeseriesChart.render = function(data, rollCurtain) {
     };
   });
 
-  this.x.domain(d3.extent(data, function(d) { return d.date; }));
+  this.x.domain(d3.extent(data, function(d) { return d.date; })).nice(d3.time.day);
   this.y.domain([0, d3.max(lineData, function(d) { return d3.max(d.values, function(v) { return v.y_val; }); })
   ]);
 
