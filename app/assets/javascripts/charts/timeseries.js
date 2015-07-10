@@ -1,20 +1,3 @@
-// values for y-axis are indicated by 'y_val'
-// values for x-axis are indicated by 'date' and should be date strings
-// lines are grouped together by 'name'
-// opts include:
-//    width (int)
-//    height (int)
-//    datetimeformat (string): For parsing datestrings and converting to JS date objects
-//    dateKey (string): For finding the date string in the data
-//    yAxisLabel (string)
-//    dp: Dataprocessor
-//    load_key (string or array): For getting data from data processor
-//    yTickFormat (string) [optional]: For formatting y axis values. See d3 tickformat documentation
-//    is_processed (boolean): [optional]: If true, skips data processing (Note: data must be sorted if processing is skipped)
-//    format_date (function) [optional]: Formats date for tooltip
-//    formatName (function) [optional]: Formats name for tooltip and legend
-//    format_y_val (function) [optional]: Formats y value for tooltip and axis
-
 var timeseriesChart = {};
 
 timeseriesChart.initalize = function(el, opts) {

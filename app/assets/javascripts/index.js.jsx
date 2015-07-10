@@ -14,7 +14,7 @@ $(document).ready(function() {
         visibleMpOpts:    [],
         queryWords:       [],
         results:          null,
-        timeSeriesData:   null
+        newDataReceived:  false
       };
     },
 
@@ -22,10 +22,11 @@ $(document).ready(function() {
       $.get('/search/init_data', {}, function(response) {
 
         this.setState({
-          gaDataHash:     response.ga_data_hash,
-          partiesMpsHash: response.parties_mps_hash,
-          mpsNameHash:    response.mps_name_hash,
-          visibleGAIds:   _.keys(response.ga_data_hash).sort().reverse() // Always stays the same
+          gaDataHash:       response.ga_data_hash,
+          partiesMpsHash:   response.parties_mps_hash,
+          mpsNameHash:      response.mps_name_hash,
+          visibleGAIds:     _.keys(response.ga_data_hash).sort().reverse(), // Always stays the same
+          newDataReceived:  false
         });
 
         this.updateVisibleOptions();
@@ -35,65 +36,10 @@ $(document).ready(function() {
     handleQueryResponse: function(results, query_string, shouldProcess) {
       var queryWords = _.map(query_string.split(','), function(w) { return w.toLowerCase().trim() });
       this.setState({
-        results: results,
-        queryWords: queryWords,
-        timeSeriesData: this.processTimeSeriesData(results, 'DDMMYYYY', 'parties', queryWords)
+        results:          results,
+        queryWords:       queryWords,
+        newDataReceived:  true
       });
-    },
-
-    processTimeSeriesData: function(data, dateGran, splitBy, queryWords) {
-      console.log('Start processing timesseries data at ' + moment().format('HH:mm:ss'));
-      var wfKeyBuilder = function(d, w) {
-        if (splitBy === 'words') {
-          return w;
-        } else if (splitBy === 'parties') {
-          return d.party + ' ' + w;
-        } else { // mp
-          return d.mp_id + ' ' + w;
-        }
-      };
-      var mergeAndAdd = function(obj1, obj2) {
-        var merged = $.extend({}, obj1);
-        _.each(obj2, function(val, key) {
-          merged[key] = merged[key] ? (merged[key] + val) : val;
-        });
-        return merged;
-      };
-      var initializeCount = function() {
-        var obj = {}
-        _.each(queryWords, function(w) {
-          _.each(splitByKeys, function(k) {
-            key = k ? (k + ' ' + w) : w
-            obj[key] = 0;
-          });
-        });
-        return obj;
-      };
-
-      if (splitBy === 'words')        var splitByKeys = [''];
-      else if (splitBy === 'parties') var splitByKeys = _.uniq(_.map(data, function(d) { return d.party }));
-      else                            var splitByKeys = _.uniq(_.map(data, function(d) { return d.mp_id }));
-      var processedData = _.chain(data)
-        .reduce(function(memo, d) {
-          var wordFreq = {};
-          var party = d.party;
-          _.each(queryWords, function(w) {
-            wordFreq[wfKeyBuilder(d, w)] = parseInt(d['wf_' + w]) || 0;
-          })
-          var date = moment(d.date).format(dateGran)
-          if (!memo[date]) memo[date] = initializeCount();
-          memo[date] = mergeAndAdd(memo[date], wordFreq);
-          return memo;
-        }, {})
-        .reduce(function(memo, val, key) {
-          memo.push(_.extend({date: moment(key, dateGran).toDate()}, val));
-          return memo;
-        }, [])
-        .sortBy('date')
-        .value();
-      console.log('Finish processing timeseries data at ' + moment().format('HH:mm:ss'));
-      console.log(processedData);
-      return processedData;
     },
 
     // Borrowed from: http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string
@@ -176,7 +122,8 @@ $(document).ready(function() {
         visiblePartyIds: visiblePartyIds,
         visibleMpIds:    visibleMpIds,
         selectedParties: selectedParties,
-        selectedMps:     selectedMps
+        selectedMps:     selectedMps,
+        newDataReceived: false
       });
     },
 
@@ -200,8 +147,14 @@ $(document).ready(function() {
     render: function() {
       // <SearchResultsTable data={this.state.results}/>
       // Re-insert below barchartwrap!
-      var timeseries = (d = this.state.timeSeriesData) ? <TimeseriesWrap data={d}/> : '';
-      var barchart = (d = this.state.results) ? <BarchartWrap data={d}/> : '';
+      if (this.state.results) {
+        var data = {results: this.state.results, queryWords: this.state.queryWords, newDataReceived: this.state.newDataReceived}
+        var timeseries = <TimeseriesWrap data={data}/>
+        var barchart = <BarchartWrap data={data}/>
+      } else {
+        var timeseries = '';
+        var barchart = '';
+      }
       return <div className="container">
         <Searchbar onQuery={this.handleQuery}/>
         <div className="row filter-wrap">

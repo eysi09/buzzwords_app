@@ -80,14 +80,14 @@ module QueryUtils
   end
 
   def self.maybe_filter_on_mps(q, o)
-    unless (ids = o['mpids']).blank?
-      q = q.where(speeches__mp_id: ids)
+    unless (mpids = o[:mpids]).blank?
+      q = q.where(speeches__mp_id: mpids)
     end
     q
   end
 
   def self.maybe_filter_on_date_from(q, o)
-    unless (date_from = o['date_from']).blank?
+    unless (date_from = o[:date_from]).blank?
       date_str = Date.parse(date_from, '%Y-%m-%d').to_s
       q = q.where('speeches.date > ?', date_str)
     end
@@ -96,7 +96,7 @@ module QueryUtils
 
 
   def self.maybe_filter_on_date_to(q, o)
-    unless (date_to = o['date_to']).blank?
+    unless (date_to = o[:date_to]).blank?
       date_str = (Date.parse(date_to, '%Y-%m-%d') + 1).to_s # Include last day in range
       q = q.where('speeches.date < ?', date_str)
     end

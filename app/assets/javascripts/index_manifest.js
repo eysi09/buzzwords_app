@@ -9,5 +9,7 @@
 //= require barchart
 //= require search_results_table
 //= require lang_utils
+//= require data_processing_utils
 //= require charts/timeseries
+//= require charts/barchart
 //= require charts/d3tip
