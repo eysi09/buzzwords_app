@@ -2,6 +2,19 @@ module QueryUtils
 
   def self.get_speeches(opts)
     self.start_logging
+    q = self.build_query(opts)
+    if opts[:chart_type] == 'timeseries'
+      speeches = self.timeseries_data_from_query(q, opts)
+    else
+      speeches = self.barchart_data_from_query(q, opts)
+    end
+    self.end_logging
+    speeches
+  end
+
+  private
+
+  def self.build_query(opts)
     words = opts[:words]
     q = DB[:speeches].where(Sequel.lit(self.where_words(words)))
 
@@ -11,22 +24,26 @@ module QueryUtils
     q = self.maybe_filter_on_date_from        q, opts
     q = self.maybe_filter_on_date_to          q, opts
 
-    q = q.select(:id,
-      :date,
-      :mp_id,
-      :general_assembly_id,
-      :party,
-      :url,
-      Sequel.lit(self.select_word_freq(words))
-    )
-    q = q.order_by(:date)
-
-    speeches = q.all
-    self.end_logging
-    speeches
+    q.select(Sequel.lit(self.select_word_freq(words)))
   end
 
-  private
+  def self.timeseries_data_from_query(q, opts)
+    date_expr = "date_trunc('#{opts[:date_gran]}', date)"
+    group_by = opts[:group_by].to_sym
+    q.group(Sequel.lit(date_expr), group_by)
+      .order(Sequel.lit(date_expr))
+      .select_append{[group_by, Sequel.lit(date_expr + " as date")]}
+      .all
+  end
+
+  def self.barchart_data_from_query(q, opts)
+    order_expr = ''
+    group_by = opts[:group_by].to_sym
+    q.group(group_by)
+      .order(nil)
+      .select_append(group_by)
+      .all
+  end
 
   def self.start_logging
     @t1_q = Time.now
@@ -49,8 +66,8 @@ module QueryUtils
 
   def self.select_word_freq(words)
     w = words[0]
-    expr = %Q{word_freq #> '{"#{w}"}' as wf_#{w}}
-    words[1..words.length].each{|w| expr += %Q{, word_freq #>> '{"#{w}"}' as wf_#{w}}}
+    expr = %Q{sum((word_freq #>> '{"#{w}"}')::int) as wf_#{w}}
+    words[1..words.length].each{|w| expr += %Q{, sum((word_freq #>> '{"#{w}"}')::numeric) as wf_#{w}}}
     expr
   end
 

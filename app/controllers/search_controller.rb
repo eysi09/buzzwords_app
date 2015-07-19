@@ -45,7 +45,6 @@ class SearchController < ApplicationController
     start_logging
     speeches = QueryUtils.get_speeches(make_query_params)
     end_logging
-
     render :json => {
       results: speeches
     }
@@ -68,10 +67,13 @@ class SearchController < ApplicationController
 
   def make_query_params
     {
-     words:     params[:query_string].split(',').map{|w| w.strip.downcase},
-     gaids:     params[:gaids],
-     partyids:  params[:partyids],
-     mpids:     params[:mpids],
+     words:       params[:queryString].split(',').map{|w| w.strip.downcase},
+     gaids:       params[:gaids],
+     partyids:    params[:partyids],
+     mpids:       params[:mpids],
+     group_by:    'party',
+     date_gran:   'week',
+     chart_type:  'timeseries'
     }
   end
 

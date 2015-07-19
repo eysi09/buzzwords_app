@@ -5,8 +5,8 @@ var Searchbar = React.createClass({
   },
 
   query: function() {
-    var query_string = this.refs.query_string.getDOMNode().value.trim();
-    this.props.onQuery(query_string);
+    var queryString = this.refs.queryString.getDOMNode().value.trim();
+    this.props.onQuery(queryString);
   },
 
   render: function() {
@@ -14,7 +14,7 @@ var Searchbar = React.createClass({
       <div className="row" id="searchbar-wrap">
         <div className="col-md-9">
           <div className="input-group input-group-lg">
-            <input onKeyDown={this.maybeQuery} type="text" className="form-control" placeholder="Leitarorð, t.d. heimilin" ref="query_string" />
+            <input onKeyDown={this.maybeQuery} type="text" className="form-control" placeholder="Leitarorð, t.d. heimilin" ref="queryString" />
             <span className="input-group-btn" id="search-icon">
               <button onClick={this.query} className="btn btn-primary">Search</button>
             </span>

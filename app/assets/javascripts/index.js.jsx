@@ -33,8 +33,8 @@ $(document).ready(function() {
       }.bind(this));
     },
 
-    handleQueryResponse: function(results, query_string, shouldProcess) {
-      var queryWords = _.map(query_string.split(','), function(w) { return w.toLowerCase().trim() });
+    handleQueryResponse: function(results, queryString, shouldProcess) {
+      var queryWords = _.map(queryString.split(','), function(w) { return w.toLowerCase().trim() });
       this.setState({
         results:          results,
         queryWords:       queryWords,
@@ -127,17 +127,17 @@ $(document).ready(function() {
       });
     },
 
-    handleQuery: function(query_string) {
-      if (query_string) {
+    handleQuery: function(queryString) {
+      if (queryString) {
         var data = {
-          query_string:   query_string,
+          queryString:   queryString,
           gaids:          _.keys(this.state.selectedGAs),
           partyids:       _.keys(this.state.selectedParties),
           mpids:          _.keys(this.state.selectedMps),
         };
         self = this;
         $.get('/search/query_server', data, function(response) {
-          self.handleQueryResponse(response.results, query_string);
+          self.handleQueryResponse(response.results, queryString);
         });
       } else {
         this.handleQueryResponse([]);
@@ -151,6 +151,7 @@ $(document).ready(function() {
         var data = {results: this.state.results, queryWords: this.state.queryWords, newDataReceived: this.state.newDataReceived}
         var timeseries = <TimeseriesWrap data={data}/>
         var barchart = <BarchartWrap data={data}/>
+        barchart = '';
       } else {
         var timeseries = '';
         var barchart = '';

@@ -2,10 +2,10 @@ var DataProcessingUtils = (function() {
 
   var exports = {};
 
-  exports.wfKeyBuilder = function(data, word, splitBy) {
-    if (splitBy === 'words') {
+  exports.wfKeyBuilder = function(data, word, groupBy) {
+    if (groupBy === 'word') {
       return word;
-    } else if (splitBy === 'parties') {
+    } else if (groupBy === 'party') {
       return data.party + ' ' + word;
     } else { // mp
       return data.mp_id + ' ' + word;
@@ -31,12 +31,11 @@ var DataProcessingUtils = (function() {
     return obj;
   };
 
-  exports.getSplitByKeys = function(data, splitBy) {
-    if (splitBy === 'words') {
+  exports.getGroupByKeys = function(data, groupBy) {
+    if (groupBy === 'word') {
       return [''];
     } else {
-      var key = splitBy === 'parties' ? 'party' : 'mp_id';
-      return _.uniq(_.map(data, function(d) { return d[key] }));
+      return _.uniq(_.map(data, function(d) { return d[groupBy] }));
     }
   };
 

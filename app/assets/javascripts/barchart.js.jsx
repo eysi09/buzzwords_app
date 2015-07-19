@@ -37,21 +37,21 @@ var BarchartWrap = React.createClass({
   },
 
   updateChart: function() {
-    var data = this.processData(this.props.data.results, 'mps', this.props.data.queryWords);
+    var data = this.processData(this.props.data.results, 'party', this.props.data.queryWords);
     this.state.chart.render(data, this.state.firstRender);
   },
 
-  processData: function(data, splitBy) {
+  processData: function(data, groupBy) {
     console.log('Start processing barchart data at ' + moment().format('HH:mm:ss'));
     var queryWords = this.props.data.queryWords;
     var dp = DataProcessingUtils;
-    var splitByKeys = dp.getSplitByKeys(data, splitBy);
-    var count = dp.initializeCount(queryWords, splitByKeys);
+    var groupByKeys = dp.getGroupByKeys(data, groupBy);
+    var count = dp.initializeCount(queryWords, groupByKeys);
     _.each(data, function(d) {
       var wordFreq = {};
       _.each(queryWords, function(w) {
-        wordFreq[dp.wfKeyBuilder(d, w, splitBy)] = parseInt(d['wf_' + w]) || 0;
-      })
+        wordFreq[dp.wfKeyBuilder(d, w, groupBy)] = parseInt(d['wf_' + w]) || 0;
+      });
       count = dp.mergeAndAdd(count, wordFreq);
     });
     var processedData = _.chain(count)
