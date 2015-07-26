@@ -13,7 +13,7 @@ var TimeseriesWrap = React.createClass({
   },
 
   shouldComponentUpdate:function(nextProps) {
-    return nextProps.data.newDataReceived;
+    return nextProps.newDataReceived;
   },
 
   componentDidUpdate: function() {
@@ -38,13 +38,13 @@ var TimeseriesWrap = React.createClass({
   },
 
   updateChart: function() {
-    var data = this.processData(this.props.data.results, 'party');
+    var data = this.processData(this.props.data, 'party');
     this.state.chart.render(data, this.state.firstRender);
   },
 
   processData: function(data, groupBy, dateGran) {
     console.log('Start processing timesseries data at ' + moment().format('HH:mm:ss'));
-    var queryWords = this.props.data.queryWords;
+    var queryWords = this.props.queryWords;
     var dp = DataProcessingUtils;
     var groupByKeys = dp.getGroupByKeys(data, groupBy);
     var processedData = _.chain(data)
@@ -71,7 +71,7 @@ var TimeseriesWrap = React.createClass({
   },
 
   render: function() {
-    return <div className="row timeseries-wrap">
+    return <div id="timeseries" className="row timeseries-wrap" data-menu-top="100">
     </div>;
   }
 });

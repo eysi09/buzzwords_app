@@ -2,12 +2,15 @@
 //= require backbone
 //= require moment
 //= require d3
+//= require skrollr
+//= require skrollr-menu
 //= require index
 //= require searchbar
 //= require filters
 //= require timeseries
 //= require barchart
 //= require search_results_table
+//= require side_nav
 //= require lang_utils
 //= require data_processing_utils
 //= require charts/timeseries

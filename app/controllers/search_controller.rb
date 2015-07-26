@@ -67,13 +67,13 @@ class SearchController < ApplicationController
 
   def make_query_params
     {
-     words:       params[:queryString].split(',').map{|w| w.strip.downcase},
+     words:       params[:queryWords],
      gaids:       params[:gaids],
      partyids:    params[:partyids],
      mpids:       params[:mpids],
+     chart_type:  params[:chartType],
      group_by:    'party',
      date_gran:   'week',
-     chart_type:  'timeseries'
     }
   end
 

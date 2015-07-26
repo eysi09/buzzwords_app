@@ -6,7 +6,12 @@ var Searchbar = React.createClass({
 
   query: function() {
     var queryString = this.refs.queryString.getDOMNode().value.trim();
-    this.props.onQuery(queryString);
+    if (queryString) {
+      var queryWords = _.map(queryString.split(','), function(w) { return w.toLowerCase().trim() });
+    } else {
+      queryWords = false;
+    }
+    this.props.onQuery(queryWords);
   },
 
   render: function() {

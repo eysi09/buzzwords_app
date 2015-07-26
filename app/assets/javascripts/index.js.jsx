@@ -13,7 +13,8 @@ $(document).ready(function() {
         visiblePartyOpts: [],
         visibleMpOpts:    [],
         queryWords:       [],
-        results:          null,
+        timeseriesData:   null,
+        barchartData:     null,
         newDataReceived:  false
       };
     },
@@ -33,13 +34,14 @@ $(document).ready(function() {
       }.bind(this));
     },
 
-    handleQueryResponse: function(results, queryString, shouldProcess) {
-      var queryWords = _.map(queryString.split(','), function(w) { return w.toLowerCase().trim() });
-      this.setState({
-        results:          results,
-        queryWords:       queryWords,
+    handleQueryResponse: function(results, queryParams) {
+      var newState = {
+        queryWords:       queryParams.queryWords,
         newDataReceived:  true
-      });
+      }
+      newState[queryParams.chartType + 'Data'] = results;
+      this.setState(newState);
+      this.goTo(queryParams.chartType);
     },
 
     // Borrowed from: http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string
@@ -127,38 +129,61 @@ $(document).ready(function() {
       });
     },
 
-    handleQuery: function(queryString) {
-      if (queryString) {
-        var data = {
-          queryString:   queryString,
-          gaids:          _.keys(this.state.selectedGAs),
-          partyids:       _.keys(this.state.selectedParties),
-          mpids:          _.keys(this.state.selectedMps),
+    handleQuery: function(queryWords, chartType) {
+      if (queryWords) {
+        var queryParams = {
+          chartType:  chartType || 'timeseries',
+          queryWords: queryWords,
+          gaids:      _.keys(this.state.selectedGAs),
+          partyids:   _.keys(this.state.selectedParties),
+          mpids:      _.keys(this.state.selectedMps),
         };
         self = this;
-        $.get('/search/query_server', data, function(response) {
-          self.handleQueryResponse(response.results, queryString);
+        $.get('/search/query_server', queryParams, function(response) {
+          self.handleQueryResponse(response.results, queryParams);
         });
       } else {
         this.handleQueryResponse([]);
       }
     },
 
+    handleLinkClick: function(event) {
+      var linkName = event.target.dataset.name;
+      if (linkName === 'home') {
+        this.reset();
+      } else if (this.state[linkName + 'Loaded']) {
+        this.goTo(linkName);
+      } else {
+        this.handleQuery(this.state.queryWords, linkName)
+      }
+    },
+
+    goTo: function(section) {
+      skrollr.menu.click(document.getElementById(section + '-link'));
+    },
+
+    reset: function() {
+      this.replaceState(this.getInitialState());
+      $('input.form-control').val('');
+      this.goTo('home');
+    },
+
     render: function() {
       // <SearchResultsTable data={this.state.results}/>
       // Re-insert below barchartwrap!
-      if (this.state.results) {
-        var data = {results: this.state.results, queryWords: this.state.queryWords, newDataReceived: this.state.newDataReceived}
-        var timeseries = <TimeseriesWrap data={data}/>
-        var barchart = <BarchartWrap data={data}/>
-        barchart = '';
+      if (this.state.barchartData) {
+        var barchart = <BarchartWrap data={this.state.barchartData} queryWords = {this.state.queryWords} newDataReceived = {this.state.newDataReceived}/>
+      } else {
+        var barchart = '';
+      }
+      if (this.state.timeseriesData) {
+        var timeseries = <TimeseriesWrap data={this.state.timeseriesData} queryWords = {this.state.queryWords} newDataReceived = {this.state.newDataReceived}/>
       } else {
         var timeseries = '';
-        var barchart = '';
       }
       return <div className="container">
         <Searchbar onQuery={this.handleQuery}/>
-        <div className="row filter-wrap">
+        <div id="filters" className="row filter-wrap">
           <Select onOptionClick={this.toggleOption}
                   name={'gaSelect'}
                   data={{ids: this.state.visibleGAIds, values: this.state.gaDataHash, selection: this.state.selectedGAs}}
@@ -175,9 +200,13 @@ $(document).ready(function() {
         </div>
         {timeseries}
         {barchart}
+        <SideNav onLinkClick={this.handleLinkClick}/>
       </div>
     }
   });
+
+  s = skrollr.init();
+  skrollr.menu.init(s, {});
 
   React.render(<App />, $('#main')[0]);
 

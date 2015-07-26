@@ -13,7 +13,7 @@ var BarchartWrap = React.createClass({
   },
 
   shouldComponentUpdate:function(nextProps) {
-    return nextProps.data.newDataReceived;
+    return nextProps.newDataReceived;
   },
 
   componentDidUpdate: function() {
@@ -37,13 +37,13 @@ var BarchartWrap = React.createClass({
   },
 
   updateChart: function() {
-    var data = this.processData(this.props.data.results, 'party', this.props.data.queryWords);
+    var data = this.processData(this.props.data, 'party', this.props.queryWords);
     this.state.chart.render(data, this.state.firstRender);
   },
 
   processData: function(data, groupBy) {
     console.log('Start processing barchart data at ' + moment().format('HH:mm:ss'));
-    var queryWords = this.props.data.queryWords;
+    var queryWords = this.props.queryWords;
     var dp = DataProcessingUtils;
     var groupByKeys = dp.getGroupByKeys(data, groupBy);
     var count = dp.initializeCount(queryWords, groupByKeys);
@@ -66,7 +66,7 @@ var BarchartWrap = React.createClass({
   },
 
   render: function() {
-    return <div className="row barchart-wrap">
+    return <div id="barchart" className="row barchart-wrap">
     </div>;
   }
 

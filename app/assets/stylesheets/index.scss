@@ -17,10 +17,6 @@ body {
   margin-top: 20px;
 }
 
-.in-row-margin {
-  margin-bottom: 10px;
-}
-
 .input-group.date {
   max-width: 220px;
 }
@@ -71,6 +67,27 @@ body {
     top: 2px;
   }
 }
-/* Search results charts */
+
+/* Side nav bar */
+
+.side-nav {
+  position: fixed;
+  left: 15px;
+  top: 40%;
+
+  a {
+    display: block;
+  }
+}
+
+/* Timeseries */
+
+/* Barchart */
 
 /* Search results table */
+
+/* Other */
+
+.in-row-margin {
+  margin-bottom: 10px;
+}
