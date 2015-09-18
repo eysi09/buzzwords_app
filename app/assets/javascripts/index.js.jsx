@@ -15,8 +15,31 @@ $(document).ready(function() {
         queryWords:       [],
         timeseriesData:   null,
         barchartData:     null,
-        newDataReceived:  false
+        tsDateGran:       null,
+        bcDataGran:       null,
+        tsGroupBy:        null,
+        tsGroupBy:        null,
+        newDataReceived:  false,
       };
+    },
+
+    setDefaultState: function() {
+      this.setState({
+        selectedGAs:      {},
+        selectedParties:  {},
+        selectedMps:      {},
+        visibleGAOpts:    [],
+        visiblePartyOpts: [],
+        visibleMpOpts:    [],
+        queryWords:       [],
+        timeseriesData:   null,
+        barchartData:     null,
+        tsDateGran:       null,
+        bcDataGran:       null,
+        tsGroupBy:        null,
+        tsGroupBy:        null,
+        newDataReceived:  false
+      });
     },
 
     componentDidMount: function() {
@@ -42,20 +65,6 @@ $(document).ready(function() {
       newState[queryParams.chartType + 'Data'] = results;
       this.setState(newState);
       this.goTo(queryParams.chartType);
-    },
-
-    // Borrowed from: http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string
-    // not in use
-    occurrences: function(string, subString, allowOverlapping) {
-      string+=""; subString+="";
-      if (subString.length<=0) return string.length + 1;
-      var n = 0, pos = 0;
-      var step = allowOverlapping ? 1 : subString.length;
-      while(true) {
-        pos = string.indexOf(subString,pos);
-        if (pos >= 0) { n++; pos += step; } else break;
-      }
-      return n;
     },
 
     toggleOption: function(event) {
@@ -163,7 +172,7 @@ $(document).ready(function() {
     },
 
     reset: function() {
-      this.replaceState(this.getInitialState());
+      this.setDefaultState();
       $('input.form-control').val('');
       this.goTo('home');
     },
