@@ -1,0 +1,17 @@
+{
+  "name": "buzzwords-app",
+  "description": "buzzwords-app",
+  "version": "1.0.0",
+  "devDependencies": {
+    "exports-loader": "~0.6.2",
+    "expose-loader": "~0.6.0",
+    "imports-loader": "~0.6.3",
+    "jsx-loader": "^0.13.2",
+    "webpack": "~1.4.13"
+  },
+  "dependencies": {
+    "jquery": "^2.1.4",
+    "lodash": "~2.4.1",
+    "react": "^0.13.3"
+  }
+}

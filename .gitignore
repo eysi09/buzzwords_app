@@ -28,3 +28,4 @@ nohup.out
 server.log
 .vagrant
 torquebox
+/app/assets/javascripts

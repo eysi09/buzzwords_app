@@ -63,5 +63,11 @@ module BuzzwordsApp
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+    # Due to webpack bundle file.
+    # Move to config/initializers/assets.rb when updating to rails version
+    config.assets.configure do |env|
+      env.unregister_postprocessor 'application/javascript', Sprockets::SafetyColons
+    end
   end
 end

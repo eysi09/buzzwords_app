@@ -4,7 +4,6 @@
 //= require d3
 //= require skrollr
 //= require skrollr-menu
-//= require index
 //= require searchbar
 //= require filters
 //= require timeseries

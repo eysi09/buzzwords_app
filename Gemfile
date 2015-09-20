@@ -8,9 +8,9 @@ if RbConfig::CONFIG['target_os'] == 'mswin32'
 else
 	gem 'pg'
 end
-gem 'jquery-rails'
+#gem 'jquery-rails'
 gem 'sequel'
-gem 'react-rails'
+#gem 'react-rails'
 gem 'normalize-rails'
 gem 'bootstrap-sass', '~> 3.3.4'
 gem 'autoprefixer-rails'
