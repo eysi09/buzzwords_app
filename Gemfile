@@ -3,10 +3,10 @@ source 'https://rubygems.org'
 gem 'rails', '3.2.19'
 # Couldn't install the pg gem on windows
 if RbConfig::CONFIG['target_os'] == 'mswin32'
-	gem 'jdbc-postgres'
-	gem 'activerecord-jdbc-adapter'
+gem 'jdbc-postgres'
+  gem 'activerecord-jdbc-adapter'
 else
-	gem 'pg'
+  gem 'pg'
 end
 #gem 'jquery-rails'
 gem 'sequel'

@@ -2,10 +2,9 @@
   <%= stylesheet_link_tag 'index_manifest' %>
 <% end %>
 <% content_for :script do %>
+  <!-- Include bundle first since it contains jquery which the bootstrap-sprockets from 'application.js' need -->
   <%= javascript_include_tag 'bundle' %>
-  <%= javascript_include_tag 'index_manifest' %>
-  <%= render :partial => 'dependencies' %>
-  <%= render :partial => 'search/js_templates' %>
+  <%= javascript_include_tag "application" %>
 <% end %>
 
 <section id="home">

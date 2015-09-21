@@ -10,8 +10,14 @@
     "webpack": "~1.4.13"
   },
   "dependencies": {
+    "bootstrap-sass": "^3.2.0",
+    "bootstrap-sass-webpack": "0.0.3",
+    "d3": "^3.5.6",
+    "d3-tip": "^0.6.7",
     "jquery": "^2.1.4",
     "lodash": "~2.4.1",
-    "react": "^0.13.3"
+    "moment": "^2.10.6",
+    "react": "^0.13.3",
+    "skrollr": "^0.6.26"
   }
 }

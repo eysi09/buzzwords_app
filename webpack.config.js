@@ -23,21 +23,19 @@ config.output = {
 config.resolve = {
   // tell webpack which extensions to auto search when it resolves modules. With this,
   // you'll be able to do `require('./utils')` instead of `require('./utils.js')`
-  extensions: ['', '.js', '.js.jsx', '.jsx'],
+  extensions: ['', '.js', '.jsx'],
   // by default, webpack will search in `web_modules` and `node_modules`.
   modulesDirectories: [ 'node_modules' ],
 };
 
 config.plugins = [
-  // we need this plugin to teach webpack how to find module entry points for bower files,
-  // as these may not have a package.json file
-  new webpack.ResolverPlugin([
-    new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin('.bower.json', ['main']),
-  ]),
   new webpack.ProvidePlugin({
     $: 'jquery',
     jQuery: 'jquery',
     "window.jQuery": "jquery"
+  }),
+  new webpack.ProvidePlugin({
+    React: 'react'
   }) 
 ];
 

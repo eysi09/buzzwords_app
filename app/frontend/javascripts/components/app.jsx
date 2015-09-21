@@ -1,4 +1,17 @@
+require('expose?skrollr!skrollr');
+require('../plugins/skrollr-menu.js');
+
+s = skrollr.init();
+skrollr.menu.init(s, {});
+
+var Searchbar   = require('./searchbar'),
+    Select      = require('./select'),
+    SideNav     = require('./side_nav'),
+    Timeseries  = require('./timeseries'),
+    Barchart    = require('./barchart');
+    
 var App = React.createClass({
+
   getInitialState: function() {
     return {
       gaDataHash:       {},
@@ -179,14 +192,14 @@ var App = React.createClass({
     // <SearchResultsTable data={this.state.results}/>
     // Re-insert below barchartwrap!
     if (this.state.barchartData) {
-      var barchart = <BarchartWrap data={this.state.barchartData} queryWords = {this.state.queryWords} newDataReceived = {this.state.newDataReceived}/>
+      var barchart_comp = <Barchart data={this.state.barchartData} queryWords = {this.state.queryWords} newDataReceived = {this.state.newDataReceived}/>
     } else {
-      var barchart = '';
+      var barchart_comp = '';
     }
     if (this.state.timeseriesData) {
-      var timeseries = <TimeseriesWrap data={this.state.timeseriesData} queryWords = {this.state.queryWords} newDataReceived = {this.state.newDataReceived}/>
+      var timeseries_comp = <Timeseries data={this.state.timeseriesData} queryWords = {this.state.queryWords} newDataReceived = {this.state.newDataReceived}/>
     } else {
-      var timeseries = '';
+      var timeseries_comp = '';
     }
     return <div className="container">
       <Searchbar onQuery={this.handleQuery}/>
@@ -205,8 +218,8 @@ var App = React.createClass({
                 titleHash={this.state.mpsNameHash}
                 />
       </div>
-      {timeseries}
-      {barchart}
+      {timeseries_comp}
+      {barchart_comp}
       <SideNav onLinkClick={this.handleLinkClick}/>
     </div>
   }
