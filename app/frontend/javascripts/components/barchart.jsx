@@ -1,6 +1,6 @@
 var moment              = require('moment');
 var D3Barchart          = require('../charts/barchart');
-var DataProcessingUtils = require('../utils/data_processing_utils');
+var DataProcessingUtils = require('../utils/data-processing-utils');
 
 var Barchart = React.createClass({
 

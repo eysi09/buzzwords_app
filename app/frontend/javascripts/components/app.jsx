@@ -4,21 +4,30 @@ require('../plugins/skrollr-menu.js');
 s = skrollr.init();
 skrollr.menu.init(s, {});
 
-var Searchbar   = require('./searchbar'),
-    Select      = require('./select'),
-    SideNav     = require('./side_nav'),
-    Timeseries  = require('./timeseries'),
-    Barchart    = require('./barchart');
-    
+var Reflux        = require('reflux'),
+    Searchbar     = require('./searchbar'),
+    Select        = require('./select'),  
+    SideNav       = require('./side-nav'),
+    Timeseries    = require('./timeseries'),
+    Barchart      = require('./barchart'),
+    Actions       = require('../actions/actions'),
+    InitDataStore = require('../stores/init-data-store'); 
+
 var App = React.createClass({
 
   getInitialState: function() {
+    return {
+      initData: {}
+    };
+  },
+
+  /*getInitialState: function() {
     return {
       gaDataHash:       {},
       partiesMpsHash:   {},
       mpsNameHash:      {},
       selectedGAs:      {},
-      selectedParties:  {},
+      selectedParties:  {}, 
       selectedMps:      {},
       visibleGAOpts:    [],
       visiblePartyOpts: [],
@@ -51,22 +60,7 @@ var App = React.createClass({
       tsGroupBy:        null,
       newDataReceived:  false
     });
-  },
-
-  componentDidMount: function() {
-    $.get('/search/init_data', {}, function(response) {
-
-      this.setState({
-        gaDataHash:       response.ga_data_hash,
-        partiesMpsHash:   response.parties_mps_hash,
-        mpsNameHash:      response.mps_name_hash,
-        visibleGAIds:     _.keys(response.ga_data_hash).sort().reverse(), // Always stays the same
-        newDataReceived:  false
-      });
-
-      this.updateVisibleOptions();
-    }.bind(this));
-  },
+  },*/
 
   handleQueryResponse: function(results, queryParams) {
     var newState = {
@@ -93,7 +87,7 @@ var App = React.createClass({
     this.updateVisibleOptions();
   },
 
-  // Þrot
+ /* // Þrot
   updateVisibleOptions: function() {
     var selectedGAIds = _.keys(this.state.selectedGAs);
     var selectedPartyIds = _.keys(this.state.selectedParties);
@@ -147,7 +141,7 @@ var App = React.createClass({
       selectedMps:     selectedMps,
       newDataReceived: false
     });
-  },
+  },*/
 
   handleQuery: function(queryWords, chartType) {
     if (queryWords) {
@@ -204,19 +198,9 @@ var App = React.createClass({
     return <div className="container">
       <Searchbar onQuery={this.handleQuery}/>
       <div id="filters" className="row filter-wrap">
-        <Select onOptionClick={this.toggleOption}
-                name={'gaSelect'}
-                data={{ids: this.state.visibleGAIds, values: this.state.gaDataHash, selection: this.state.selectedGAs}}
-                />
-        <Select onOptionClick={this.toggleOption}
-                name={'partySelect'}
-                data={{ids: this.state.visiblePartyIds, values: '', selection: this.state.selectedParties}}
-                />
-        <Select onOptionClick={this.toggleOption}
-                name={'mpSelect'}
-                data={{ids: this.state.visibleMpIds, values: this.state.mpsNameHash, selection: this.state.selectedMps}}
-                titleHash={this.state.mpsNameHash}
-                />
+        <Select name={'gaSelect'} />
+        <Select name={'partySelect'} />
+        <Select name={'mpSelect'} />
       </div>
       {timeseries_comp}
       {barchart_comp}

@@ -1,5 +1,5 @@
 var D3Timeseries        = require('../charts/timeseries');
-var DataProcessingUtils = require('../utils/data_processing_utils');
+var DataProcessingUtils = require('../utils/data-processing-utils');
 var moment              = require('moment');
 
 var Timeseries = React.createClass({

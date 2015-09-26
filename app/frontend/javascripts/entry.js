@@ -1,6 +1,7 @@
 require('expose?$!expose?jQuery!jquery');
-var React = require('react');
-var _ = require('lodash');
-var App = require ('./components/app');
+require('expose?React!expose?React!react');
+
+var	_ 	= require('lodash'),
+	App	= require ('./components/app');
 
 React.render(<App />, $('#main')[0]);

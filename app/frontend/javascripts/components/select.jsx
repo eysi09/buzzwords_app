@@ -1,10 +1,40 @@
-var langUtils = require('../utils/lang_utils');
+var Reflux            = require('reflux'),
+    FilterItemsStore  = require('../stores/filter-items-store'),
+    InitDataStore     = require('../stores/init-data-store'),
+    Actions           = require('../actions/actions'),
+    langUtils         = require('../utils/lang-utils');
 
 var Select = React.createClass({
 
+  mixins: [
+    Reflux.connect(InitDataStore, 'initData'),
+    Reflux.connectFilter(FilterItemsStore, 'filterData', function(filterData) {
+      var selectedIds = filterData[{
+        gaSelect:     'selectedGAs',
+        partySelect:  'selectedParties',
+        mpSelect:     'selectedMps'
+      }[this.props.name]];
+      var visibleIds = filterData[{
+        gaSelect:     'visibleGAIds',
+        partySelect:  'visiblePartyIds',
+        mpSelect:     'visibleMpIds'
+      }[this.props.name]];
+      return {
+        selectedIds:  selectedIds,
+        visibleIds:   visibleIds
+      }
+    })
+  ],
+
+  componentDidMount: function() {
+    Actions.getInitData();
+  },
+
   getInitialState: function() {
     return {
-      isExpanded: false
+      isExpanded: false,
+      filterData: {},
+      initData:   {}
     };
   },
 
@@ -13,8 +43,8 @@ var Select = React.createClass({
   },
 
   render: function() {
-    var count = _.keys(this.props.data.selection).length;
     var name = this.props.name;
+    var count = _.keys(this.state.filterData.selectedIds).length;
     var selectLabel = '';
     if (count === 0) {
       selectLabel = {
@@ -36,7 +66,10 @@ var Select = React.createClass({
       }[name];
     }
     if (this.state.isExpanded) {
-      var content = <OptionWrap onOptionClick={this.props.onOptionClick} data={this.props.data} parentSelect={name}/>;
+      var content = <OptionWrap
+        initData={this.state.initData}
+        filterData={this.state.filterData}
+        parentSelect={name}/>;
     } else {
       var content = '';
     }
@@ -51,19 +84,20 @@ var Select = React.createClass({
 var OptionWrap = React.createClass({
 
   render: function() {
-    var ids = this.props.data.ids;
-    var values = this.props.data.values;
-    var selection = this.props.data.selection;
+    var ids = this.props.filterData.visibleIds;
+    var selectedIds = this.props.filterData.selectedIds;
     var parentSelect = this.props.parentSelect;
+    var gaData = this.props.initData.gaDataHash;
+    var mpNames = this.props.initData.mpsNameHash;
     var componentGetter = function(id) {
       return {
-        gaSelect:     <GAOption key={id} data={{id: id, values: values[id]}} />,
-        partySelect:  <PartyOption key={id} data={id} />,
-        mpSelect:     <MpOption key={id} data={values[id]} />
+        gaSelect:     <GAOption key={id} value={id} data={gaData[id]} />,
+        partySelect:  <PartyOption key={id} value={id} />,
+        mpSelect:     <MpOption key={id} value={mpNames[id]} />
       }[parentSelect]
     };
     var iconGetter = function(id) {
-      return selection[id] ? <i className="glyphicon glyphicon-ok"></i> : '';
+      return selectedIds[id] ? <i className="glyphicon glyphicon-ok"></i> : '';
     };
     return <ul className="option-wrap">
       {_.map(ids, function(id) {
@@ -80,9 +114,9 @@ var OptionWrap = React.createClass({
 var GAOption = React.createClass({
 
   render: function() {
-    var values = this.props.data.values;
+    var data = this.props.data;
     return <div>
-      {this.props.data.id + ' (' + values.year_from + ' - ' + values.year_to + ')'}
+      {this.props.value + ' (' + data.year_from + ' - ' + data.year_to + ')'}
     </div>
   }
 
@@ -92,7 +126,7 @@ var PartyOption = React.createClass({
 
   render: function() {
     return <div>
-      {this.props.data}
+      {this.props.value}
     </div>
   }
 
@@ -102,7 +136,7 @@ var MpOption = React.createClass({
 
   render: function() {
     return <div>
-      {this.props.data}
+      {this.props.value}
     </div>
   }
 
