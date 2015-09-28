@@ -8,9 +8,8 @@ gem 'jdbc-postgres'
 else
   gem 'pg'
 end
-#gem 'jquery-rails'
 gem 'sequel'
-#gem 'react-rails'
+gem 'nokogiri'
 gem 'normalize-rails'
 gem 'bootstrap-sass', '~> 3.3.4'
 gem 'autoprefixer-rails'
