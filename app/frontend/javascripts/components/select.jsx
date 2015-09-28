@@ -1,40 +1,31 @@
 var Reflux            = require('reflux'),
     FilterItemsStore  = require('../stores/filter-items-store'),
-    InitDataStore     = require('../stores/init-data-store'),
     Actions           = require('../actions/actions'),
     langUtils         = require('../utils/lang-utils');
 
 var Select = React.createClass({
 
-  mixins: [
-    Reflux.connect(InitDataStore, 'initData'),
-    Reflux.connectFilter(FilterItemsStore, 'filterData', function(filterData) {
-      var selectedIds = filterData[{
-        gaSelect:     'selectedGAs',
-        partySelect:  'selectedParties',
-        mpSelect:     'selectedMps'
-      }[this.props.name]];
-      var visibleIds = filterData[{
-        gaSelect:     'visibleGAIds',
-        partySelect:  'visiblePartyIds',
-        mpSelect:     'visibleMpIds'
-      }[this.props.name]];
-      return {
-        selectedIds:  selectedIds,
-        visibleIds:   visibleIds
-      }
-    })
-  ],
-
-  componentDidMount: function() {
-    Actions.getInitData();
-  },
+  mixins: [Reflux.connectFilter(FilterItemsStore, 'filterData', function(filterData) {
+    var selectedIds = filterData[{
+      gaSelect:     'selectedGAs',
+      partySelect:  'selectedParties',
+      mpSelect:     'selectedMps'
+    }[this.props.name]];
+    var visibleIds = filterData[{
+      gaSelect:     'visibleGAIds',
+      partySelect:  'visiblePartyIds',
+      mpSelect:     'visibleMpIds'
+    }[this.props.name]];
+    return {
+      selectedIds:  selectedIds,
+      visibleIds:   visibleIds
+    }
+  })],
 
   getInitialState: function() {
     return {
       isExpanded: false,
-      filterData: {},
-      initData:   {}
+      filterData: {}
     };
   },
 
@@ -67,7 +58,7 @@ var Select = React.createClass({
     }
     if (this.state.isExpanded) {
       var content = <OptionWrap
-        initData={this.state.initData}
+        initData={this.props.initData}
         filterData={this.state.filterData}
         parentSelect={name}/>;
     } else {
@@ -82,6 +73,14 @@ var Select = React.createClass({
 });
 
 var OptionWrap = React.createClass({
+
+  handleClick: function(event) {
+    event.stopPropagation();
+    var data = event.target.parentNode.dataset;
+    var selectName = data.parentselect;
+    var id = selectName === 'partySelect' ? data.id : parseInt(data.id);
+    Actions.filterItemClick(id, selectName)
+  },
 
   render: function() {
     var ids = this.props.filterData.visibleIds;
@@ -101,7 +100,7 @@ var OptionWrap = React.createClass({
     };
     return <ul className="option-wrap">
       {_.map(ids, function(id) {
-        return <li className="option" data-id={id} data-parentselect={parentSelect} onClick={this.props.onOptionClick} key={id}>
+        return <li className="option" data-id={id} data-parentselect={parentSelect} onClick={this.handleClick} key={id}>
           {iconGetter(id)}
           {componentGetter(id)}
         </li>

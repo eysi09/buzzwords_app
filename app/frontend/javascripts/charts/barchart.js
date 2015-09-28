@@ -64,7 +64,7 @@ D3Barchart.initialize = function(el, opts) {
 
 };
 
-D3Barchart.render = function(data, rollCurtain) {
+D3Barchart.render = function(data) {
   var self = this;
   var color = d3.scale.category10();
   var x_vals = _.map(data, function(d) { return d.x_val; });

@@ -15,10 +15,25 @@ var FilterItemsStore = Reflux.createStore({
   visibleGAIds:     [], // Always stays the same
 
   init: function() {
-    this.listenTo(InitDataStore, this.onInitDataReceived)
+    this.listenTo(InitDataStore, this.initDataReceived)
   },
 
-  onInitDataReceived: function(data) {
+  // Following are action methods
+
+  onFilterItemClick: function(id, selectName) {
+    var selectionHolder = {
+      gaSelect:     this.selectedGAs,
+      partySelect:  this.selectedParties,
+      mpSelect:     this.selectedMps
+    }[selectName]
+    if (selectionHolder[id]) delete selectionHolder[id];
+    else selectionHolder[id] = true;
+    this.updateVisibleOptions();
+  },
+
+  // Non-action helper methods below
+
+  initDataReceived: function(data) {
     this.gaDataHash      = data.gaDataHash;
     this.partiesMpsHash  = data.partiesMpsHash;
     this.mpsNameHash     = data.mpsNameHash;
@@ -79,7 +94,7 @@ var FilterItemsStore = Reflux.createStore({
     visibleMpIds = _.sortBy(visibleMpIds, function(id) {
       return this.mpsNameHash[id];
     }, this);
-    debugger
+
     this.trigger({
       visibleGAIds:     this.visibleGAIds,
       visiblePartyIds:  visiblePartyIds,

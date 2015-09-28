@@ -1,17 +1,31 @@
+var Reflux            = require('reflux'),
+    Actions           = require('../actions/actions'),
+    QueryStringStore  = require('../stores/query-string-store');
+
 var Searchbar = React.createClass({
 
-  maybeQuery: function(event) {
-    if (event.keyCode === 13) this.query();
+  mixins: [Reflux.connect(QueryStringStore, 'queryString')],
+
+  getInitialState: function() {
+    return {queryString: ''}
   },
 
-  query: function() {
-    var queryString = this.refs.queryString.getDOMNode().value.trim();
-    if (queryString) {
-      var queryWords = _.map(queryString.split(','), function(w) { return w.toLowerCase().trim() });
+  handleChange: function() {
+    Actions.searchbarChange(event.target.value);
+  },
+
+  handleKeyDown: function(event) {
+    if (event.keyCode === 13) this.handleQuery();
+  },
+
+  handleQuery: function() {
+    if (this.state.queryString) {
+      Actions.requestQuery('timeseries', 'searchbar');
+      // scroll to timeseries
+      skrollr.menu.click(document.getElementById('timeseries-link'));
     } else {
-      queryWords = false;
+      Actions.resetQuery();
     }
-    this.props.onQuery(queryWords);
   },
 
   render: function() {
@@ -19,9 +33,15 @@ var Searchbar = React.createClass({
       <div className="row" id="searchbar-wrap">
         <div className="col-md-9">
           <div className="input-group input-group-lg">
-            <input onKeyDown={this.maybeQuery} type="text" className="form-control" placeholder="Leitarorð, t.d. heimilin" ref="queryString" />
+            <input
+              onChange={this.handleChange}
+              onKeyDown={this.handleKeyDown}
+              type="text" className="form-control"
+              placeholder="Leitarorð, t.d. heimilin"
+              value={this.state.queryString}
+            />
             <span className="input-group-btn" id="search-icon">
-              <button onClick={this.query} className="btn btn-primary">Search</button>
+              <button onClick={this.handleQuery} className="btn btn-primary">Search</button>
             </span>
           </div>
         </div>

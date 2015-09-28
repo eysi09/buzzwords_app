@@ -1,14 +1,34 @@
-var moment              = require('moment');
-var D3Barchart          = require('../charts/barchart');
-var DataProcessingUtils = require('../utils/data-processing-utils');
+var Reflux          = require('reflux'),    
+    QueryDataStore  = require('../stores/query-data-store'),
+    D3Barchart      = require('../charts/barchart');
+
+var BarchartController = React.createClass({
+
+  mixins: [Reflux.connectFilter(QueryDataStore, 'results', function(queryData) {
+    if (queryData.chartKind === 'barchart') { 
+      return queryData.results;
+    } else { // Keep old
+      return this.state.results;
+    }
+  })],
+
+  getInitialState: function() {
+    return {results: []};
+  },
+  
+  render: function() {
+    var content = _.isEmpty(this.state.results) ? '' : <Barchart results={this.state.results} />
+    return <div id="barchart">
+      {content}
+    </div>
+  }
+
+});
 
 var Barchart = React.createClass({
 
   getInitialState: function() {
-    return {
-      firstRender:  true,
-      chart:        null,
-    };
+    return {chart: null}
   },
 
   componentDidMount: function() {
@@ -16,18 +36,8 @@ var Barchart = React.createClass({
     this.initalizeChart(el);
   },
 
-  shouldComponentUpdate:function(nextProps) {
-    return nextProps.newDataReceived;
-  },
-
   componentDidUpdate: function() {
     this.updateChart();
-  },
-
-  componentWillReceiveProps: function() {
-    this.setState({
-      firstRender: false,
-    });
   },
 
   initalizeChart: function(el) {
@@ -41,39 +51,14 @@ var Barchart = React.createClass({
   },
 
   updateChart: function() {
-    var data = this.processData(this.props.data, 'party', this.props.queryWords);
-    this.state.chart.render(data, this.state.firstRender);
-  },
-
-  processData: function(data, groupBy) {
-    console.log('Start processing barchart data at ' + moment().format('HH:mm:ss'));
-    var queryWords = this.props.queryWords;
-    var dp = DataProcessingUtils;
-    var groupByKeys = dp.getGroupByKeys(data, groupBy);
-    var count = dp.initializeCount(queryWords, groupByKeys);
-    _.each(data, function(d) {
-      var wordFreq = {};
-      _.each(queryWords, function(w) {
-        wordFreq[dp.wfKeyBuilder(d, w, groupBy)] = parseInt(d['wf_' + w]) || 0;
-      });
-      count = dp.mergeAndAdd(count, wordFreq);
-    });
-    var processedData = _.chain(count)
-      .map(function(v, k) { return {x_val: k, y_val: v} })
-      .sortBy('y_val')
-      .reverse()
-      .value();
-
-    console.log('Finish processing barchart data at ' + moment().format('HH:mm:ss'));
-    console.log(processedData);
-    return processedData;
+    this.state.chart.render(this.props.results);
   },
 
   render: function() {
-    return <div id="barchart" className="row barchart-wrap">
+    return <div className="row barchart-inner-wrap">
     </div>;
   }
 
 });
 
-module.exports = Barchart;
+module.exports = BarchartController;

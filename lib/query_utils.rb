@@ -3,7 +3,7 @@ module QueryUtils
   def self.get_speeches(opts)
     self.start_logging
     q = self.build_query(opts)
-    if opts[:chart_type] == 'timeseries'
+    if opts[:chart_kind] == 'timeseries'
       speeches = self.timeseries_data_from_query(q, opts)
     else
       speeches = self.barchart_data_from_query(q, opts)

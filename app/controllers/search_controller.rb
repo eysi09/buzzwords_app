@@ -71,7 +71,7 @@ class SearchController < ApplicationController
      gaids:       params[:gaids],
      partyids:    params[:partyids],
      mpids:       params[:mpids],
-     chart_type:  params[:chartType],
+     chart_kind:  params[:chartKind],
      group_by:    'party',
      date_gran:   'week',
     }

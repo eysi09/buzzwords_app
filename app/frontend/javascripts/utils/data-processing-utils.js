@@ -1,4 +1,56 @@
-var DataProcessingUtils = {};
+var moment = require('moment');
+
+var DataProcessingUtils = {}
+
+DataProcessingUtils.processTimeseriesData = function(data, queryWords, groupBy, dateGran) {
+  console.log('Start processing timesseries data at ' + moment().format('HH:mm:ss'));
+  var dp = DataProcessingUtils;
+  var groupByKeys = dp.getGroupByKeys(data, groupBy);
+  var processedData = _.chain(data)
+    .reduce(function(memo, d) {
+      var wordFreq = {};
+      var party = d.party;
+      _.each(queryWords, function(w) {
+        wordFreq[dp.wfKeyBuilder(d, w, groupBy)] = parseInt(d['wf_' + w]) || 0;
+      })
+      var date = moment(d.date).format(dateGran)
+      if (!memo[date]) memo[date] = dp.initializeCount(queryWords, groupByKeys);
+      memo[date] = dp.mergeAndAdd(memo[date], wordFreq);
+      return memo;
+    }, {})
+    .reduce(function(memo, val, key) {
+      memo.push(_.extend({date: moment(key, dateGran).toDate()}, val));
+      return memo;
+    }, [])
+    .sortBy('date')
+    .value();
+  console.log('Finish processing timeseries data at ' + moment().format('HH:mm:ss'));
+  console.log(processedData);
+  return processedData;
+};
+
+DataProcessingUtils.processBarchartData = function(data, queryWords, groupBy) {
+  console.log('Start processing barchart data at ' + moment().format('HH:mm:ss'));
+  var dp = DataProcessingUtils;
+  var groupByKeys = dp.getGroupByKeys(data, groupBy);
+  var count = dp.initializeCount(queryWords, groupByKeys);
+  _.each(data, function(d) {
+    var wordFreq = {};
+    _.each(queryWords, function(w) {
+      wordFreq[dp.wfKeyBuilder(d, w, groupBy)] = parseInt(d['wf_' + w]) || 0;
+    });
+    count = dp.mergeAndAdd(count, wordFreq);
+  });
+  var processedData = _.chain(count)
+    .map(function(v, k) { return {x_val: k, y_val: v} })
+    .sortBy('y_val')
+    .reverse()
+    .value();
+
+  console.log('Finish processing barchart data at ' + moment().format('HH:mm:ss'));
+  console.log(processedData);
+  return processedData;
+};
 
 DataProcessingUtils.wfKeyBuilder = function(data, word, groupBy) {
   if (groupBy === 'word') {
