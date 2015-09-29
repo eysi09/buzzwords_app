@@ -24,7 +24,7 @@ var SideNav = React.createClass({
 
   handleLinkClick: function(event) {
     var linkName = event.target.dataset.name;
-    if (linkName !== 'home' && !this.state.chartStates[linkName].loaded) { Actions.requestQuery(linkName, 'linkClick'); }
+    if (linkName !== 'home' && !this.state.chartStates[linkName].loaded) { Actions.requestQuery(linkName, 'linkClick', null); }
   },
 
 

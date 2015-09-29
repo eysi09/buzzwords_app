@@ -1,6 +1,5 @@
 var Reflux              = require('reflux'),
     FilterItemsStore    = require('./filter-items-store'),
-    QueryStringStore    = require('./query-string-store'),
     Actions             = require('../actions/actions'),
     DataProcessingUtils = require('../utils/data-processing-utils');
 
@@ -11,7 +10,6 @@ var QueryDataStore = Reflux.createStore({
   selectedGAs:      {},
   selectedParties:  {},
   selectedMps:      {},
-  searchbarInput:   '', // Current searchbar input
   currQueryString:  '', // String used in current query
   prevQueryString:  '', // String used in prev query
   timeseries:       {loaded: false},
@@ -19,17 +17,19 @@ var QueryDataStore = Reflux.createStore({
   
   init: function() {
     this.listenTo(FilterItemsStore, this.grabFilterData);
-    this.listenTo(QueryStringStore, this.grabQueryString);
   },
 
   // Following are action methods
 
-  onRequestQuery: function(chartKind, trigger) {
+  onRequestQuery: function(chartKind, trigger, queryString) {
+    // First query is always triggered by searchbar,
+    // ensuring there is a query string
+    // queryString is null when triggered by link click (uses this.currQueryString)
     if (trigger === 'searchbar') {
-      this.currQueryString = this.searchbarInput;
+      this.currQueryString = queryString;
       this.resetChartStates();
     }
-    if (this.currQueryString) { // Only query if input
+    if (this.currQueryString) { // To avoid querying on link click with no previous query
       var queryParams = {
         chartKind:  chartKind,
         queryWords: _.map(this.currQueryString.split(','), function(w) { return w.toLowerCase().trim() }),
@@ -90,10 +90,6 @@ var QueryDataStore = Reflux.createStore({
     this.selectedGAs = filterData.selectedGAs;
     this.selectedParties = filterData.selectedParties;
     this.selectedMps = filterData.selectedMps;
-  },
-
-  grabQueryString: function(queryString) {
-    this.searchbarInput = queryString;
   }
 
 });

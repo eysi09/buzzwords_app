@@ -1,17 +1,14 @@
 var Reflux            = require('reflux'),
-    Actions           = require('../actions/actions'),
-    QueryStringStore  = require('../stores/query-string-store');
+    Actions           = require('../actions/actions');
 
 var Searchbar = React.createClass({
-
-  mixins: [Reflux.connect(QueryStringStore, 'queryString')],
 
   getInitialState: function() {
     return {queryString: ''}
   },
 
   handleChange: function() {
-    Actions.searchbarChange(event.target.value);
+    this.setState({queryString: event.target.value});
   },
 
   handleKeyDown: function(event) {
@@ -19,8 +16,8 @@ var Searchbar = React.createClass({
   },
 
   handleQuery: function() {
-    if (this.state.queryString) {
-      Actions.requestQuery('timeseries', 'searchbar');
+    if (qs = this.state.queryString) {
+      Actions.requestQuery('timeseries', 'searchbar', qs);
       // scroll to timeseries
       skrollr.menu.click(document.getElementById('timeseries-link'));
     } else {
