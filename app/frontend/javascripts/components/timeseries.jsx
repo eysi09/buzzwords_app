@@ -60,24 +60,28 @@ var DateGranSettings = React.createClass({
 
 
   render: function() {
-    var options = '';
-    var selected = {
+    var list = '';
+    var options = {
       day:    'Dagur',
       week:   'Vika',
       month:  'Mánuður',
       year:   'Ár'
-    }[this.state.dateGran];
+    }
+    var selected = options[this.state.dateGran];
     if (this.state.isExpanded) {
-      options = <ul className="option-wrap">
-        <li className="option" data-id="day" onClick={this.handleOptionClick}>Dagur</li>
-        <li className="option" data-id="week" onClick={this.handleOptionClick}>Vika</li>
-        <li className="option" data-id="month" onClick={this.handleOptionClick}>Mánuður</li>
-        <li className="option" data-id="year" onClick={this.handleOptionClick}>Ár</li>
+      list = <ul className="option-wrap">
+        {_.map(options, function(val, key) {
+          var icon = this.state.dateGran === key ? <i className="glyphicon glyphicon-ok"></i> : '';
+          return <li className="option" data-id={key} key={key} onClick={this.handleOptionClick} >
+            {icon}
+            {val}
+          </li>
+        }, this)}
       </ul>
     }
     return <div className="col-md-3 select" onClick={this.toggleExpanded}>
       Grófleiki: {selected}
-      {options}
+      {list}
     </div>
   }
 

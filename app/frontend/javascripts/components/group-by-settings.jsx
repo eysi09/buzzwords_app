@@ -29,24 +29,28 @@ var GroupBySettings = React.createClass({
   },
 
   render: function() {
-    var options = '';
-    var selected = {
+    var list = '';
+    var options = {
       word:                 'Orði',
       mp_id:                'Þingmanni',
       party:                'Þingflokki',
       general_assembly_id:  'Þingári'
-    }[this.state.groupBy];
+    };
+    var selected = options[this.state.groupBy];
     if (this.state.isExpanded) {
-      options = <ul className="option-wrap">
-        <li className="option" data-id="word" onClick={this.handleOptionClick}>Orði</li>
-        <li className="option" data-id="mp_id" onClick={this.handleOptionClick}>Þingmanni</li>
-        <li className="option" data-id="party" onClick={this.handleOptionClick}>Þingflokki</li>
-        <li className="option" data-id="general_assembly_id" onClick={this.handleOptionClick}>Þingári</li>
+      list = <ul className="option-wrap">
+        {_.map(options, function(val, key) {
+          var icon = this.state.groupBy === key ? <i className="glyphicon glyphicon-ok"></i> : '';
+          return <li className="option" data-id={key} key={key} onClick={this.handleOptionClick} >
+            {icon}
+            {val}
+          </li>
+        }, this)}
       </ul>
     }
     return <div className="col-md-3 select" onClick={this.toggleExpanded}>
       Flokka eftir: {selected}
-      {options}
+      {list}
     </div>
   }
 
