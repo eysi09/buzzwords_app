@@ -56,9 +56,9 @@ D3Timeseries.initalize = function(el, opts) {
         var date = self.formatDate(d.date);
         var html = "<span class='date'>" + date + "</span>";
         _.each(d, function(val, key) {
-          if (key !== 'date') {
+          var y_val = self.formatYVal(val);
+          if (key !== 'date' && y_val !== 0) {
             var name = self.formatName(key);
-            var y_val = self.formatYVal(val);
             html += "<br><span>" + name + ":  </span><strong>" + y_val + "</strong>";
           }
         })

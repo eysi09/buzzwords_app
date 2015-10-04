@@ -15,7 +15,7 @@ var FilterItemsStore = Reflux.createStore({
   visibleGAIds:     [], // Always stays the same
 
   init: function() {
-    this.listenTo(InitDataStore, this.initDataReceived)
+    this.listenTo(InitDataStore, this.initDataReceived);
   },
 
   // Following are action methods

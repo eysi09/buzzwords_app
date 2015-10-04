@@ -6,6 +6,13 @@ DataProcessingUtils.processTimeseriesData = function(data, queryWords, groupBy, 
   console.log('Start processing timesseries data at ' + moment().format('HH:mm:ss'));
   var dp = DataProcessingUtils;
   var groupByKeys = dp.getGroupByKeys(data, groupBy);
+  // TODO: Shorten strings
+  var dateFormat = {
+    'day': 'YYYYMMDD',
+    'week': 'YYYYMMWW',
+    'month': 'YYYYMM',
+    'year': 'YYYY'
+  }[dateGran];
   var processedData = _.chain(data)
     .reduce(function(memo, d) {
       var wordFreq = {};
@@ -13,13 +20,13 @@ DataProcessingUtils.processTimeseriesData = function(data, queryWords, groupBy, 
       _.each(queryWords, function(w) {
         wordFreq[dp.wfKeyBuilder(d, w, groupBy)] = parseInt(d['wf_' + w]) || 0;
       })
-      var date = moment(d.date).format(dateGran)
+      var date = moment(d.date).format(dateFormat)
       if (!memo[date]) memo[date] = dp.initializeCount(queryWords, groupByKeys);
       memo[date] = dp.mergeAndAdd(memo[date], wordFreq);
       return memo;
     }, {})
     .reduce(function(memo, val, key) {
-      memo.push(_.extend({date: moment(key, dateGran).toDate()}, val));
+      memo.push(_.extend({date: moment(key, dateFormat).toDate()}, val));
       return memo;
     }, [])
     .sortBy('date')
@@ -57,8 +64,10 @@ DataProcessingUtils.wfKeyBuilder = function(data, word, groupBy) {
     return word;
   } else if (groupBy === 'party') {
     return data.party + ' ' + word;
-  } else { // mp
+  } else if (groupBy === 'mp_id') {
     return data.mp_id + ' ' + word;
+  } else { // general_assembly_id
+    return data.general_assembly_id + ' ' + word;
   }
 };
 

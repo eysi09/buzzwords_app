@@ -1,5 +1,6 @@
 var Reflux          = require('reflux'),    
     QueryDataStore  = require('../stores/query-data-store'),
+    GroupBySettings = require('./group-by-settings'),
     D3Barchart      = require('../charts/barchart');
 
 var BarchartController = React.createClass({
@@ -17,7 +18,13 @@ var BarchartController = React.createClass({
   },
   
   render: function() {
-    var content = _.isEmpty(this.state.results) ? '' : <Barchart results={this.state.results} />
+    var content = '';
+    if (!_.isEmpty(this.state.results)) {
+      content = [<div className="row options-wrap" key="opts">
+        <GroupBySettings chartKind='barchart' />
+      </div>,
+      <Barchart key="bc-chart" results={this.state.results}/>]
+    }
     return <div id="barchart">
       {content}
     </div>

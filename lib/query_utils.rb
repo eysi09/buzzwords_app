@@ -29,20 +29,23 @@ module QueryUtils
 
   def self.timeseries_data_from_query(q, opts)
     date_expr = "date_trunc('#{opts[:date_gran]}', date)"
-    group_by = opts[:group_by].to_sym
-    q.group(Sequel.lit(date_expr), group_by)
-      .order(Sequel.lit(date_expr))
-      .select_append{[group_by, Sequel.lit(date_expr + " as date")]}
-      .all
+    if (group = opts[:group_by]) == :word # Only group by date_expr
+      q = q.group(Sequel.lit(date_expr))
+        .select_append{[Sequel.lit(date_expr + " as date")]}
+    else # Group by date_expr and group (i.e. party, mp_id, general_assembly_id)
+      q = q.group(Sequel.lit(date_expr), group)
+        .select_append{[group, Sequel.lit(date_expr + " as date")]}
+    end
+    q.order(Sequel.lit(date_expr)).all
   end
 
   def self.barchart_data_from_query(q, opts)
     order_expr = ''
-    group_by = opts[:group_by].to_sym
-    q.group(group_by)
-      .order(nil)
-      .select_append(group_by)
-      .all
+    unless (group = opts[:group_by]) == :word
+      q = q.group(group)
+        .select_append(group)
+    end
+    q.order(nil).all
   end
 
   def self.start_logging

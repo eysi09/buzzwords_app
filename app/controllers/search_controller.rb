@@ -72,8 +72,8 @@ class SearchController < ApplicationController
      partyids:    params[:partyids],
      mpids:       params[:mpids],
      chart_kind:  params[:chartKind],
-     group_by:    'party',
-     date_gran:   'week',
+     group_by:    params[:groupBy].to_sym,
+     date_gran:   params[:dateGran] # nil for barchart
     }
   end
 

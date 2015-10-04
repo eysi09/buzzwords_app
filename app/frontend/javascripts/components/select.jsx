@@ -29,7 +29,7 @@ var Select = React.createClass({
     };
   },
 
-  toggleSelectState: function() {
+  toggleExpanded: function() {
     this.setState({isExpanded: !this.state.isExpanded})
   },
 
@@ -64,7 +64,7 @@ var Select = React.createClass({
     } else {
       var content = '';
     }
-    return <div className='col-md-3 select' data-name={name} onClick={this.toggleSelectState}>
+    return <div className='col-md-3 select' data-name={name} onClick={this.toggleExpanded}>
       {selectLabel}
       {content}
     </div>

@@ -12,8 +12,8 @@ var QueryDataStore = Reflux.createStore({
   selectedMps:      {},
   currQueryString:  '', // String used in current query
   prevQueryString:  '', // String used in prev query
-  timeseries:       {loaded: false},
-  barchart:         {loaded: false},
+  timeseries:       {loaded: false, dateGran: 'week', groupBy: 'word'},
+  barchart:         {loaded: false, groupBy: 'word'},
   
   init: function() {
     this.listenTo(FilterItemsStore, this.grabFilterData);
@@ -29,60 +29,72 @@ var QueryDataStore = Reflux.createStore({
       this.currQueryString = queryString;
       this.resetChartStates();
     }
-    if (this.currQueryString) { // To avoid querying on link click with no previous query
-      var queryParams = {
-        chartKind:  chartKind,
-        queryWords: _.map(this.currQueryString.split(','), function(w) { return w.toLowerCase().trim() }),
-        gaids:      _.keys(this.selectedGAs),
-        partyids:   _.keys(this.selectedParties),
-        mpids:      _.keys(this.selectedMps)
-      };
-      self = this;
-      $.get('/search/query_server', queryParams, function(response) {
-        self.updateChartStates(queryParams.chartKind);
-        self.handleQueryResponse(response.results, queryParams);
-        self.prevQueryString = self.currQueryString;
-      });
-    }
+    this.query(chartKind);
   },
 
   onResetQuery: function() {
     this.resetChartStates();
-    var emptyData = {chartKind: 'timeseries', results: []};
-    this.trigger(emptyData);
+    var pubData = this.defaultPublishData();
+    pubData.results = [];
+    pubData.chartKind = 'timeseries';
+    this.trigger(pubData);
     emptyData.chartKind = 'barchart';
-    this.trigger(emptyData);
+    this.trigger(pubData);
+  },
+
+  onChartSettingsChange: function(chartKind, settingKey, setting) {
+    this[chartKind][settingKey] = setting;
+    this.query(chartKind);
   },
 
   // Non-action helper methods below
+
+  query: function(chartKind) {
+    if (this.currQueryString) { // To avoid querying on link click with no previous query
+      var queryWords = _.map(this.currQueryString.split(','), function(w) { return w.toLowerCase().trim() });
+      var queryParams = {
+        chartKind:  chartKind,
+        queryWords: queryWords,
+        gaids:      _.keys(this.selectedGAs),
+        partyids:   _.keys(this.selectedParties),
+        mpids:      _.keys(this.selectedMps),
+        groupBy:    this[chartKind].groupBy,
+        dateGran:   this[chartKind].dateGran || null // null for barchart
+      };
+      self = this;
+      $.get('/search/query_server', queryParams, function(response) {
+        self.updateChartStates(chartKind);
+        self.handleQueryResponse(response.results, chartKind, queryWords);
+        self.prevQueryString = self.currQueryString;
+      });
+    }
+  },
 
   shouldQuery: function(chartKind) {
     return this.currQueryString && !this[chartKind].loaded;
   },
 
   resetChartStates: function() {
-    this.timeseries.loaded = false;
-    this.barchart.loaded = false;
+    this.timeseries = {loaded: false, groupBy: 'word', dateGran: 'week'};
+    this.barchart = {loaded: false, groupBy: 'party'};
   },
 
   updateChartStates: function(updatedChartKind) {
     this[updatedChartKind].loaded = true;
   },
 
-  handleQueryResponse: function(results, queryParams) {
-    var queryData = {
-      chartKind:  queryParams.chartKind,
-      timeseries: this.timeseries,
-      barchart:   this.barchart
-    };
-    var qw = queryParams.queryWords;
+  handleQueryResponse: function(results, chartKind, queryWords) {
+    var pubData = this.defaultPublishData();
+    pubData.chartKind = chartKind;
     var dp = DataProcessingUtils;
-    if (queryParams.chartKind === 'timeseries') {
-      queryData.results = dp.processTimeseriesData(results, qw, 'party', 'YYYYMMDD');
+    var groupBy = this[chartKind].groupBy;
+    if (chartKind === 'timeseries') {
+      var dateGran = this[chartKind].dateGran;
+      pubData.results = dp.processTimeseriesData(results, queryWords, groupBy, dateGran);
     } else {
-      queryData.results = dp.processBarchartData(results, qw, 'party');
+      pubData.results = dp.processBarchartData(results, queryWords, groupBy);
     }
-    this.trigger(queryData);
+    this.trigger(pubData);
   },
 
   // Grab and store data from FilterItemsStore for querying
@@ -90,6 +102,16 @@ var QueryDataStore = Reflux.createStore({
     this.selectedGAs = filterData.selectedGAs;
     this.selectedParties = filterData.selectedParties;
     this.selectedMps = filterData.selectedMps;
+  },
+
+  defaultPublishData: function() {
+    return {
+      isTimeseriesLoaded: this.timeseries.loaded,
+      timeseriesGroupBy:  this.timeseries.groupBy,
+      dateGran:           this.timeseries.dateGran,
+      isBarchartLoaded:   this.barchart.loaded,
+      barchartGroupBy:    this.barchart.groupBy
+    };
   }
 
 });

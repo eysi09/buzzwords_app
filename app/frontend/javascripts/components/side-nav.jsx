@@ -6,15 +6,15 @@ var SideNav = React.createClass({
 
   mixins: [Reflux.connectFilter(QueryDataStore, 'chartStates', function(queryData) {
     return {
-      timeseries: queryData.timeseries,
-      barchart: queryData.barchart
+      timeseries: queryData.isTimeseriesLoaded,
+      barchart: queryData.isBarchartLoaded
     }
   })],
 
   getInitialState: function() {
     return {chartStates: {
-      timeseries: {loaded: false},
-      barchart:   {loaded: false}
+      timeseries: false,
+      barchart:   false
     }}
   },
 
@@ -24,9 +24,8 @@ var SideNav = React.createClass({
 
   handleLinkClick: function(event) {
     var linkName = event.target.dataset.name;
-    if (linkName !== 'home' && !this.state.chartStates[linkName].loaded) { Actions.requestQuery(linkName, 'linkClick', null); }
+    if (linkName !== 'home' && !this.state.chartStates[linkName]) { Actions.requestQuery(linkName, 'linkClick', null); }
   },
-
 
   render: function() {
     return ( 
