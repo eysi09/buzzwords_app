@@ -6,18 +6,28 @@ var Reflux          = require('reflux'),
 
 var TimeseriesController = React.createClass({
 
-  mixins: [Reflux.connectFilter(QueryDataStore, 'results', function(queryData) {
+  mixins: [Reflux.connectFilter(QueryDataStore, function(queryData) {
     if (queryData.chartKind === 'timeseries') { 
-      return queryData.results;
-    } else { // Keep old
-      return this.state.results;
+      return {
+        results:          queryData.results,
+        receivedNewData:  true
+      }
+    } else {
+      return {receivedNewData: false};
     }
   })],
 
   getInitialState: function() {
-    return {results: []};
+    return {
+      results:         [],
+      receivedNewData: false
+    };
   },
-  
+
+  shouldComponentUpdate: function(nextProps, nextState) {
+    return nextState.receivedNewData;
+  },
+
   render: function() {
     var content = '';
     if (!_.isEmpty(this.state.results)) {
@@ -36,8 +46,11 @@ var TimeseriesController = React.createClass({
 
 var DateGranSettings = React.createClass({
 
-  mixins: [Reflux.connectFilter(QueryDataStore, 'dateGran', function(queryData) {
-    return queryData.dateGran;
+  mixins: [Reflux.connectFilter(QueryDataStore, function(queryData) {
+    return {
+      dateGran: queryData.dateGran,
+      isExpanded: false
+    }
   })],
 
   getInitialState: function() {
@@ -53,11 +66,9 @@ var DateGranSettings = React.createClass({
 
   handleOptionClick: function(event) {
     event.stopPropagation();
-    this.setState({isExpanded: false});
     var dateGran = event.target.dataset.id;
     Actions.chartSettingsChange('timeseries', 'dateGran', dateGran);
   },
-
 
   render: function() {
     var list = '';

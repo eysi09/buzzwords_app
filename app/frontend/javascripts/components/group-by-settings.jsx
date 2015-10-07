@@ -4,9 +4,15 @@ var Reflux          = require('reflux'),
 
 var GroupBySettings = React.createClass({
 
-  mixins: [Reflux.connectFilter(QueryDataStore, 'groupBy', function(queryData) {
-    if (this.props.chartKind === 'timeseries') { return queryData.timeseriesGroupBy; }
-    else { return queryData.barchartGroupBy; }
+  mixins: [Reflux.connectFilter(QueryDataStore, function(queryData) {
+    var state = {isExpanded: false};
+    if (this.props.chartKind === 'timeseries') {
+      state.groupBy = queryData.timeseriesGroupBy
+      return state;
+    } else {
+      state.groupBy = queryData.barchartGroupBy;
+      return state;
+    }
   })],
 
   getInitialState: function() {
@@ -23,7 +29,6 @@ var GroupBySettings = React.createClass({
 
   handleOptionClick: function(event) {
     event.stopPropagation();
-    this.setState({isExpanded: false});
     var groupBy = event.target.dataset.id;
     Actions.chartSettingsChange(this.props.chartKind, 'groupBy', groupBy);
   },

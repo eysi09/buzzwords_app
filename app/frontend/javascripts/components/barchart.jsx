@@ -5,18 +5,28 @@ var Reflux          = require('reflux'),
 
 var BarchartController = React.createClass({
 
-  mixins: [Reflux.connectFilter(QueryDataStore, 'results', function(queryData) {
-    if (queryData.chartKind === 'barchart') { 
-      return queryData.results;
-    } else { // Keep old
-      return this.state.results;
+  mixins: [Reflux.connectFilter(QueryDataStore, function(queryData) {
+    if (queryData.chartKind === 'barchart') {
+      return {
+        results:          queryData.results,
+        receivedNewData:  true
+      }
+    } else {
+      return {receivedNewData: false};
     }
   })],
 
   getInitialState: function() {
-    return {results: []};
+    return {
+      results:         [],
+      receivedNewData: false
+    };
   },
-  
+
+  shouldComponentUpdate: function(nextProps, nextState) {
+    return nextState.receivedNewData;
+  },
+
   render: function() {
     var content = '';
     if (!_.isEmpty(this.state.results)) {

@@ -4,7 +4,7 @@ var Reflux          = require('reflux'),
 
 var SideNav = React.createClass({
 
-  mixins: [Reflux.connectFilter(QueryDataStore, 'chartStates', function(queryData) {
+  mixins: [Reflux.connectFilter(QueryDataStore, function(queryData) {
     return {
       timeseries: queryData.isTimeseriesLoaded,
       barchart: queryData.isBarchartLoaded
@@ -12,10 +12,10 @@ var SideNav = React.createClass({
   })],
 
   getInitialState: function() {
-    return {chartStates: {
+    return {
       timeseries: false,
       barchart:   false
-    }}
+    };
   },
 
   shouldComponentUpdate: function() {
@@ -24,7 +24,7 @@ var SideNav = React.createClass({
 
   handleLinkClick: function(event) {
     var linkName = event.target.dataset.name;
-    if (linkName !== 'home' && !this.state.chartStates[linkName]) { Actions.requestQuery(linkName, 'linkClick', null); }
+    if (linkName !== 'home' && !this.state[linkName]) { Actions.requestQuery(linkName, 'linkClick', null); }
   },
 
   render: function() {

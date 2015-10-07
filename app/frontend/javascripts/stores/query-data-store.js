@@ -38,7 +38,7 @@ var QueryDataStore = Reflux.createStore({
     pubData.results = [];
     pubData.chartKind = 'timeseries';
     this.trigger(pubData);
-    emptyData.chartKind = 'barchart';
+    pubData.chartKind = 'barchart';
     this.trigger(pubData);
   },
 
@@ -68,10 +68,6 @@ var QueryDataStore = Reflux.createStore({
         self.prevQueryString = self.currQueryString;
       });
     }
-  },
-
-  shouldQuery: function(chartKind) {
-    return this.currQueryString && !this[chartKind].loaded;
   },
 
   resetChartStates: function() {

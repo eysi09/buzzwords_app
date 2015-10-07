@@ -5,7 +5,7 @@ var Reflux            = require('reflux'),
 
 var Select = React.createClass({
 
-  mixins: [Reflux.connectFilter(FilterItemsStore, 'filterData', function(filterData) {
+  mixins: [Reflux.connectFilter(FilterItemsStore, function(filterData) {
     var selectedIds = filterData[{
       gaSelect:     'selectedGAs',
       partySelect:  'selectedParties',
@@ -24,8 +24,9 @@ var Select = React.createClass({
 
   getInitialState: function() {
     return {
-      isExpanded: false,
-      filterData: {}
+      isExpanded:   false,
+      selectedIds:  {},
+      visibleIds:   []
     };
   },
 
@@ -35,7 +36,7 @@ var Select = React.createClass({
 
   render: function() {
     var name = this.props.name;
-    var count = _.keys(this.state.filterData.selectedIds).length;
+    var count = _.keys(this.state.selectedIds).length;
     var selectLabel = '';
     if (count === 0) {
       selectLabel = {
@@ -59,7 +60,8 @@ var Select = React.createClass({
     if (this.state.isExpanded) {
       var content = <OptionWrap
         initData={this.props.initData}
-        filterData={this.state.filterData}
+        selectedIds={this.state.selectedIds}
+        visibleIds={this.state.visibleIds}
         parentSelect={name}/>;
     } else {
       var content = '';
@@ -83,8 +85,8 @@ var OptionWrap = React.createClass({
   },
 
   render: function() {
-    var ids = this.props.filterData.visibleIds;
-    var selectedIds = this.props.filterData.selectedIds;
+    var ids = this.props.visibleIds;
+    var selectedIds = this.props.selectedIds;
     var parentSelect = this.props.parentSelect;
     var gaData = this.props.initData.gaDataHash;
     var mpNames = this.props.initData.mpsNameHash;
