@@ -1,4 +1,5 @@
-var Reflux = require('reflux'),
+var Reflux  = require('reflux'),
+    I       = require('immutable'),
     Actions = require('../actions/actions');
 
 var InitDataStore = Reflux.createStore({
@@ -8,11 +9,12 @@ var InitDataStore = Reflux.createStore({
   onGetInitData: function() {
     var self = this;
     $.get('/search/init_data', {}, function(response) {
-      self.trigger({
-        gaDataHash:     response.ga_data_hash,
-        partiesMpsHash: response.parties_mps_hash,
-        mpsNameHash:    response.mps_name_hash
+      var data = I.Map({
+        gaDataHash:     I.fromJS(response.ga_data_hash),
+        partiesMpsHash: I.fromJS(response.parties_mps_hash),
+        mpsNameHash:    I.fromJS(response.mps_name_hash)
       });
+      self.trigger(data);
     });
   },
 

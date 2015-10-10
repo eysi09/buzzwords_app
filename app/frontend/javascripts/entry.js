@@ -1,10 +1,11 @@
 //  webpack -d --display-reasons --display-chunks --progress --watch
 require('expose?$!expose?jQuery!jquery');
-require('expose?React!expose?React!react');
+require('expose?React!react');
+require('expose?I!immutable');
 require('expose?skrollr!skrollr');
 require('./plugins/skrollr-menu.js');
 
-s = skrollr.init();
+var s = skrollr.init();
 skrollr.menu.init(s, {
   updateUrl: true,
   duration: function(currentTop, targetTop) {
@@ -13,6 +14,7 @@ skrollr.menu.init(s, {
 });
 
 var _   = require('lodash'),
-  App = require ('./components/app');
+	I 	= require('immutable'),
+  	App = require ('./components/app');
 
 React.render(<App />, $('#main')[0]);

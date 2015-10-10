@@ -1,4 +1,5 @@
 var Reflux        = require('reflux'),
+    I             = require('immutable'),
     InitDataStore = require('./init-data-store'),
     Actions       = require('../actions/actions');
 
@@ -6,13 +7,13 @@ var FilterItemsStore = Reflux.createStore({
 
   listenables: Actions,
   
-  gaDataHash:       {},
-  partiesMpsHash:   {},
-  mpsNameHash:      {},
-  selectedGAs:      {},
-  selectedParties:  {},
-  selectedMps:      {},
-  visibleGAIds:     [], // Always stays the same
+  gaDataHash:       I.Map(),
+  partiesMpsHash:   I.Map(),
+  mpsNameHash:      I.Map(),
+  selectedGAs:      I.Map(),
+  selectedParties:  I.Map(),
+  selectedMps:      I.Map(),
+  visibleGAIds:     I.Set(), // Always stays the same
 
   init: function() {
     this.listenTo(InitDataStore, this.initDataReceived);
@@ -20,89 +21,94 @@ var FilterItemsStore = Reflux.createStore({
 
   // Following are action methods
 
-  onFilterItemClick: function(id, selectName) {
-    var selectionHolder = {
-      gaSelect:     this.selectedGAs,
-      partySelect:  this.selectedParties,
-      mpSelect:     this.selectedMps
-    }[selectName]
-    if (selectionHolder[id]) delete selectionHolder[id];
-    else selectionHolder[id] = true;
+  onUpdateSelectedGAs: function(id) {
+    if (this.selectedGAs.get(id)) { this.selectedGAs = this.selectedGAs.delete(id); }
+    else this.selectedGAs = this.selectedGAs.set(id, true);
+    //this.selectedGAs = this.selectedGAs.update(id, v => !v);
+    this.updateVisibleOptions();
+  },
+
+  onUpdateSelectedParties: function(id) {
+    if (this.selectedParties.get(id)) { this.selectedParties = this.selectedParties.delete(id); }
+    else this.selectedParties = this.selectedParties.set(id, true);
+    //this.selectedParties = this.selectedParties.update(id, v => !v);
+    this.updateVisibleOptions();
+  },
+
+  onUpdateSelectedMps: function(id) {
+    if (this.selectedMps.get(id)) { this.selectedMps = this.selectedMps.delete(id); }
+    else this.selectedMps = this.selectedMps.set(id, true);
+    //this.selectedMps = this.selectedMps.update(id, v => !v);
     this.updateVisibleOptions();
   },
 
   // Non-action helper methods below
 
   initDataReceived: function(data) {
-    this.gaDataHash      = data.gaDataHash;
-    this.partiesMpsHash  = data.partiesMpsHash;
-    this.mpsNameHash     = data.mpsNameHash;
-    this.visibleGAIds    = _.keys(this.gaDataHash).sort().reverse();
-    this.trigger({
+    this.gaDataHash      = data.get('gaDataHash');
+    this.partiesMpsHash  = data.get('partiesMpsHash');
+    this.mpsNameHash     = data.get('mpsNameHash');
+    this.visibleGAIds    = this.gaDataHash.keySeq().map(v => parseInt(v)).sort().reverse().toSet();
+    this.trigger(I.fromJS({
       visibleGAIds:     this.visibleGAIds,
-      visiblePartyIds:  _.keys(this.partiesMpsHash),
-      visibleMpIds:     _.keys(this.mpsNameHash),
-      selectedGAs:      {},
-      selectedParties:  {},
-      selectedMps:      {}
-    });
+      visiblePartyIds:  this.partiesMpsHash.keySeq().toSet(), // already ordered
+      visibleMpIds:     this.mpsNameHash.keySeq().toSet(), // already ordered
+      selectedGAs:      I.Map(),
+      selectedParties:  I.Map(),
+      selectedMps:      I.Map()
+    }));
   },
 
   // Þrot
   updateVisibleOptions: function() {
-    var selectedGAIds = _.keys(this.selectedGAs);
-    var selectedPartyIds = _.keys(this.selectedParties);
-    var mpsByGAs = [];
-    var mpsByParties = [];
+    var mpsByGAs = I.Set();
+    var mpsByParties = I.Set();
+    var visiblePartyIds = I.Set();
+    var visibleMpIds = I.Set();
 
-    // Filter by GA selection
-    if (selectedGAIds.length > 0) {
-      var visiblePartyIds = _.reduce(selectedGAIds, function(memo, id) {
-        mpsByGAs = _.uniq(mpsByGAs.concat(this.gaDataHash[id].mp_ids)); // mps come along for the ride
-        return _.uniq(memo.concat(this.gaDataHash[id].parties))
-      }, [], this);
+    // Filter parties and mps by gas
+    if (this.selectedGAs.size > 0) {
+      this.selectedGAs.forEach((value, id) => {
+        mpsByGAs = mpsByGAs.add(this.gaDataHash.getIn([String(id), 'mp_ids'])).flatten(true);
+        visiblePartyIds = visiblePartyIds.add(this.gaDataHash.getIn([String(id), 'parties'])).flatten(true);
+      });
     } else {
-      var visiblePartyIds = _.keys(this.partiesMpsHash);
-      var mpsByGAs = _.uniq(_.flatten(_.values(this.partiesMpsHash)));
+      visiblePartyIds = this.partiesMpsHash.keySeq().toSet();
+      mpsByGAs = this.partiesMpsHash.valueSeq().flatten(true).toSet();
     }
-
     // Remove hidden parties from selection
-    var selectedParties = this.selectedParties;
-    _.each(selectedPartyIds, function(id) {
-      if (!_.contains(visiblePartyIds, id)) delete selectedParties[id]
-    });
-    selectedPartyIds = _.keys(selectedParties);
+    this.selectedParties = this.selectedParties.keySeq()
+      .toSet().intersect(visiblePartyIds) // set of ids that are selected and visible
+      .toMap().map(id => true);
 
-    // Filter by MP selection
-    if (selectedPartyIds.length > 0) {
-      var mpsByParties = _.reduce(selectedPartyIds, function(memo, id) {
-        return _.uniq(memo.concat(this.partiesMpsHash[id]))
-      }, [], this);
-      var visibleMpIds = _.intersection(mpsByGAs, mpsByParties);
+    // Filter mps by parties
+    if (this.selectedParties.size > 0) {
+      this.selectedParties.forEach((value, id) => {
+        mpsByParties = mpsByParties.add(this.partiesMpsHash.get(id)).flatten(true);
+      });
+      visibleMpIds = mpsByGAs.intersect(mpsByParties);
     } else {
-      var visibleMpIds = mpsByGAs;
+      visibleMpIds = mpsByGAs;
     }
 
-    // Remove hidden mps from selection
-    var selectedMps = this.selectedMps;
-    _.each(selectedMps, function(val, key) {
-      if (!_.contains(visibleMpIds, parseInt(key))) delete selectedMps[key]
-    });
+    this.selectedMps = this.selectedMps.keySeq()
+      .toSet().map(id => parseInt(id)).intersect(visibleMpIds) // set of ids that are selected and visible
+      .toMap().map(id => true);
 
     // Sort
-    visiblePartyIds.sort();
-    visibleMpIds = _.sortBy(visibleMpIds, function(id) {
-      return this.mpsNameHash[id];
-    }, this);
+    visiblePartyIds = visiblePartyIds.sort();
+    visibleMpIds = visibleMpIds.sortBy(id => {
+      return this.mpsNameHash.get(id)
+    });
 
-    this.trigger({
+    this.trigger(I.fromJS({
       visibleGAIds:     this.visibleGAIds,
       visiblePartyIds:  visiblePartyIds,
       visibleMpIds:     visibleMpIds,
       selectedGAs:      this.selectedGAs,
       selectedParties:  this.selectedParties,
       selectedMps:      this.selectedMps
-    });
+    }));
   }
 
 });

@@ -9,10 +9,12 @@ var Reflux                = require('reflux'),
 
 var App = React.createClass({
 
-  mixins: [Reflux.connect(InitDataStore, 'initData')],
+  mixins: [Reflux.connectFilter(InitDataStore, initData => {
+    return {data: I.Map({initData: initData})}
+  })],
 
   getInitialState: function() {
-    return {initData: {}};
+    return {data: I.Map({initData: I.Map()})};
   },
 
   componentDidMount: function() {
@@ -22,12 +24,13 @@ var App = React.createClass({
   render: function() {
     // <SearchResultsTable data={this.state.results}/>
     // Re-insert below barchartwrap!
+    var state = this.state.data;
     return <div className="container">
       <Searchbar onQuery={this.handleQuery}/>
       <div id="filters" className="row filter-wrap">
-        <Select name={'gaSelect'} initData={this.state.initData} />
-        <Select name={'partySelect'} initData={this.state.initData} />
-        <Select name={'mpSelect'} initData={this.state.initData} />
+        <Select data={I.Map({name: 'gaSelect', initData: state.get('initData')})} />
+        <Select data={I.Map({name: 'partySelect', initData: state.get('initData')})} />
+        <Select data={I.Map({name: 'mpSelect', initData: state.get('initData')})} />
       </div>
       <TimeseriesController />
       <BarchartController />

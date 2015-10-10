@@ -33,7 +33,6 @@ class SearchController < ApplicationController
       end
 
     mps_name_hash = DB[:mps].select_hash(:id, :name)
-
     render :json => {
       ga_data_hash: ga_data_hash,
       parties_mps_hash: parties_mps_hash,

@@ -1,4 +1,4 @@
-var Reflux          = require('reflux'),    
+var Reflux          = require('reflux'),
     QueryDataStore  = require('../stores/query-data-store'),
     GroupBySettings = require('./group-by-settings'),
     D3Barchart      = require('../charts/barchart');

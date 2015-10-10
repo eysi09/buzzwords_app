@@ -41,8 +41,9 @@ config.plugins = [
 
 config.module = {
   loaders: [
-    { test: /\.less$/, loader: "style!css!less" }, // needs a look
-    { test: /\.jsx?$/, loader: "jsx-loader" },
-    { test: /\.json$/, loader: "json" } // needs a look
+    { test: /\.less$/, loader: 'style!css!less' }, // needs a look
+    { test: /\.jsx?$/, loaders: ['jsx', 'babel'], exclude: /node_modules/ },
+    { test: /\.js$/, loader: 'babel', exclude: /node_modules/ },
+    { test: /\.json$/, loader: 'json' } // needs a look
   ]
 }
