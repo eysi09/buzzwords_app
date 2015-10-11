@@ -13,6 +13,11 @@ skrollr.menu.init(s, {
 });
 
 var _   = require('lodash'),
-  App = require ('./components/app');
+	LogUtils = require('./utils/log-utils'),
+  	App = require ('./components/app');
+
+LogUtils.startLog(1, 'rendering');
 
 React.render(<App />, $('#main')[0]);
+
+LogUtils.endLog(1);
