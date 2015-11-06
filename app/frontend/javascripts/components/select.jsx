@@ -1,26 +1,31 @@
 var Reflux            = require('reflux'),
+    immutabilityHelpers = require('react/addons/update'),
     FilterItemsStore  = require('../stores/filter-items-store'),
     Actions           = require('../actions/actions'),
+    LogUtils          = require('../utils/log-utils'),
     langUtils         = require('../utils/lang-utils');
 
 var Select = React.createClass({
-  mixins: [Reflux.connectFilter(FilterItemsStore, function(filterData) {
-    var name = this.props.data.get('name');
-    var getSelected = d => d.get({
-      gaSelect:     'selectedGAs',
-      partySelect:  'selectedParties',
-      mpSelect:     'selectedMps'
-    }[name]);
-    var getVisible = d => d.get({
-      gaSelect:     'visibleGAIds',
-      partySelect:  'visiblePartyIds',
-      mpSelect:     'visibleMpIds'
-    }[name]);
-    var d = this.state.data
-      .set('selectedIds', getSelected(filterData))
-      .set('visibleIds', getVisible(filterData));
-    return {data: d}
-  })],
+  mixins: [
+    Reflux.connectFilter(FilterItemsStore, function(filterData) {
+      var name = this.props.data.get('name');
+      var getSelected = d => d.get({
+        gaSelect:     'selectedGAs',
+        partySelect:  'selectedParties',
+        mpSelect:     'selectedMps'
+      }[name]);
+      var getVisible = d => d.get({
+        gaSelect:     'visibleGAIds',
+        partySelect:  'visiblePartyIds',
+        mpSelect:     'visibleMpIds'
+      }[name]);
+      var d = this.state.data
+        .set('selectedIds', getSelected(filterData))
+        .set('visibleIds', getVisible(filterData));
+      return {data: d}
+    }),
+    PureRenderMixin
+  ],
 
   getInitialState: function() {
     return { data: I.Map({
@@ -31,7 +36,12 @@ var Select = React.createClass({
     };
   },
 
+  componentDidUpdate: function() {
+    LogUtils.endLog(2);
+  },
+
   toggleExpanded: function() {
+    LogUtils.startLog(2, 'open optionwrap');
     this.setState(({data}) => ({
       data: data.update('isExpanded', v => !v)
     }));

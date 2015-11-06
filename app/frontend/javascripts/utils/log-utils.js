@@ -12,8 +12,10 @@ LogUtils.startLog = function(id, name) {
 
 LogUtils.endLog = function(id) {
   var logProcess = ActiveLogProcesses[id];
-  console.log('Finished ' + logProcess.name + ' at ' + logProcess.moment.format('HH:mm:ss:SS'));
-  console.log('Duration: ' + moment().diff(logProcess.moment) + ' ms');
+  if (logProcess) {
+    console.log('Finished ' + logProcess.name + ' at ' + logProcess.moment.format('HH:mm:ss:SS'));
+    console.log('Duration: ' + moment().diff(logProcess.moment) + ' ms');
+  }
 },
 
 module.exports = LogUtils;
